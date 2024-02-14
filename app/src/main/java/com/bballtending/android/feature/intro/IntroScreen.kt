@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -24,10 +25,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.bballtending.android.R
+import com.bballtending.android.common.util.DLog
 import com.bballtending.android.feature.intro.model.IntroUiState
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
 import com.bballtending.android.ui.theme.TextBlack
+import kotlinx.coroutines.delay
 
 const val INTRO_SCREEN_ROUTE: String = "intro"
 
@@ -38,26 +41,39 @@ fun NavGraphBuilder.introScreen(
     composable(
         route = INTRO_SCREEN_ROUTE
     ) {
-        IntroScreen(onComplete = onComplete)
+        IntroScreen(
+            onComplete = onComplete,
+            onLogin = onLogin
+        )
     }
 }
 
 @Composable
 fun IntroScreen(
     onComplete: () -> Unit,
+    onLogin: () -> Unit,
     introViewModel: IntroViewModel = hiltViewModel()
 ) {
     val uiState: IntroUiState by introViewModel.uiState.collectAsStateWithLifecycle()
 
-    IntroScreen(
-        onComplete = onComplete,
-        bottomMsgResId = uiState.bottomMsgResId
-    )
+    IntroScreen(bottomMsgResId = uiState.bottomMsgResId)
+
+    LaunchedEffect(Unit) {
+        introViewModel.responseAutoLogin.collect { responseLogin ->
+            DLog.d(INTRO_SCREEN_ROUTE, "responseLogin=$responseLogin")
+
+            delay(2000)
+            if (responseLogin != null) {
+                onLogin()
+            } else {
+                onComplete()
+            }
+        }
+    }
 }
 
 @Composable
 fun IntroScreen(
-    onComplete: () -> Unit,
     bottomMsgResId: Int
 ) {
     BballTendingTheme {
@@ -130,6 +146,6 @@ fun IntroScreen(
 @Composable
 fun IntroScreenPreview() {
     BballTendingTheme {
-        IntroScreen(onComplete = {})
+        IntroScreen(onComplete = {}, onLogin = {})
     }
 }
