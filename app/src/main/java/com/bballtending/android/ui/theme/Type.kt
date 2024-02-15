@@ -12,14 +12,14 @@ import androidx.compose.ui.unit.sp
 @Stable
 class BballTendingTypography(
     appName: TextStyle,
-    title: TextStyle,
+    black: TextStyle,
     bold: TextStyle,
     medium: TextStyle,
     regular: TextStyle
 ) {
     var appName: TextStyle by mutableStateOf(appName)
         private set
-    var title: TextStyle by mutableStateOf(title)
+    var black: TextStyle by mutableStateOf(black)
         private set
     var bold: TextStyle by mutableStateOf(bold)
         private set
@@ -30,7 +30,7 @@ class BballTendingTypography(
 
     fun update(other: BballTendingTypography) {
         appName = other.appName
-        title = other.title
+        black = other.black
         bold = other.bold
         medium = other.medium
         regular = other.regular
@@ -38,11 +38,11 @@ class BballTendingTypography(
 
     fun copy(
         appTitle: TextStyle = this.appName,
-        title: TextStyle = this.title,
+        black: TextStyle = this.black,
         bold: TextStyle = this.bold,
         medium: TextStyle = this.medium,
         regular: TextStyle = this.regular
-    ): BballTendingTypography = BballTendingTypography(appTitle, title, bold, medium, regular)
+    ): BballTendingTypography = BballTendingTypography(appTitle, black, bold, medium, regular)
 }
 
 @Composable
@@ -52,27 +52,32 @@ fun BballTendingTypography(): BballTendingTypography {
             fontFamily = SignikaBold,
             fontSize = 38.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
         ),
-        title = TextStyle(
+        black = TextStyle(
             fontFamily = PretendardBlack,
             fontWeight = FontWeight.Black,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
         ),
         bold = TextStyle(
             fontFamily = PretendardBold,
             fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
         ),
         medium = TextStyle(
             fontFamily = PretendardMedium,
             fontWeight = FontWeight.Medium,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
         ),
         regular = TextStyle(
             fontFamily = PretendardRegular,
             fontWeight = FontWeight.Normal,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
         )
     )
 }
