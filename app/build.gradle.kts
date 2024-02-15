@@ -93,3 +93,11 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
 }
+
+kotlin {
+    sourceSets {
+        dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.6")
+        }
+    }
+}
