@@ -6,6 +6,7 @@ import com.bballtending.android.common.util.DLog
 import com.bballtending.android.data.repository.UserPreferencesRepositoryImpl
 import com.bballtending.android.domain.login.model.ResponseLogin
 import com.bballtending.android.feature.intro.model.IntroUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class IntroViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepositoryImpl
 ) : ViewModel() {
