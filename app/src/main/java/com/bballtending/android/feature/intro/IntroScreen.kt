@@ -1,8 +1,14 @@
 package com.bballtending.android.feature.intro
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -77,12 +83,23 @@ fun IntroScreen(
     bottomMsgResId: Int
 ) {
     BballTendingTheme {
+        val infiniteTransition = rememberInfiniteTransition(label = "BounceAnimation")
+        val offsetY by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = -15f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(400),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "BounceAnimation"
+        )
+
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BballTendingTheme.colors.background)
         ) {
-            val (textAppName, imgAppLogo, textBottomMsg) = createRefs()
+            val (textAppName, imgGoalPost, imgBasketball, textBottomMsg) = createRefs()
             Text(
                 modifier = Modifier
                     .wrapContentSize()
@@ -115,14 +132,27 @@ fun IntroScreen(
             )
             Image(
                 modifier = Modifier
+                    .width(120.dp)
+                    .wrapContentHeight()
+                    .constrainAs(imgBasketball) {
+                        bottom.linkTo(imgGoalPost.top, margin = (-34).dp)
+                        centerHorizontallyTo(parent)
+                    }
+                    .offset(y = offsetY.dp),
+                painter = painterResource(id = R.drawable.icon_basketball),
+                contentDescription = "Basketball",
+                contentScale = ContentScale.Fit
+            )
+            Image(
+                modifier = Modifier
                     .width(150.dp)
                     .wrapContentHeight()
-                    .constrainAs(imgAppLogo) {
+                    .constrainAs(imgGoalPost) {
                         bottom.linkTo(textAppName.top, margin = 20.dp)
                         centerHorizontallyTo(parent)
                     },
-                painter = painterResource(id = R.drawable.icon_intro_app_logo),
-                contentDescription = "App Logo",
+                painter = painterResource(id = R.drawable.icon_basketball_goal_post),
+                contentDescription = "GoalPost",
                 contentScale = ContentScale.Fit
             )
             Text(
