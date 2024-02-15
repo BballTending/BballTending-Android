@@ -3,4 +3,6 @@
 
     <string name="company_name">Team Wauri</string>
 
+    <string name="calendar_month_format">%1$d년 %2$d월</string>
+
 </resources>
