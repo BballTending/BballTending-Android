@@ -24,6 +24,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gamePlayerRelationDao(): GamePlayerRelationDao
 
     companion object {
+        const val DB_NAME: String = "BballTending_Database"
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -35,7 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
-                        "BballTending Database"
+                        DB_NAME
                     ).fallbackToDestructiveMigration()
                         .build()
                     INSTANCE = instance

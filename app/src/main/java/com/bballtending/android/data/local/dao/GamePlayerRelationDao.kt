@@ -23,5 +23,5 @@ interface GamePlayerRelationDao {
                 "INNER JOIN player_table ON player_table.player_id = game_player_relation_table.player_id " +
                 "WHERE game_player_relation_table.game_id = :gameId"
     )
-    suspend fun findRelationWithGameId(gameId: Long): Map<GamePlayerRelationEntity, List<PlayerEntity>>
+    suspend fun findRelationWithGameId(gameId: Long): Map<GamePlayerRelationEntity, PlayerEntity>
 }
