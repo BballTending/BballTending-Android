@@ -1,7 +1,10 @@
 package com.bballtending.android.data.di
 
+import com.bballtending.android.data.local.database.AppDatabase
+import com.bballtending.android.data.repository.GameRepositoryImpl
 import com.bballtending.android.data.repository.LoginRepositoryImpl
 import com.bballtending.android.data.repository.NetworkRepository
+import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.domain.login.repository.LoginRepository
 import dagger.Module
 import dagger.Provides
@@ -19,4 +22,10 @@ object RepositoryModule {
     ): LoginRepository =
         LoginRepositoryImpl(networkRepository)
 
+    @Provides
+    @Singleton
+    fun provideGameRepository(
+        appDatabase: AppDatabase
+    ): GameRepository =
+        GameRepositoryImpl(appDatabase)
 }

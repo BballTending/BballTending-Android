@@ -14,6 +14,7 @@ class BballTendingTypography(
     appName: TextStyle,
     black: TextStyle,
     bold: TextStyle,
+    semiBold: TextStyle,
     medium: TextStyle,
     regular: TextStyle
 ) {
@@ -22,6 +23,8 @@ class BballTendingTypography(
     var black: TextStyle by mutableStateOf(black)
         private set
     var bold: TextStyle by mutableStateOf(bold)
+        private set
+    var semiBold: TextStyle by mutableStateOf(semiBold)
         private set
     var medium: TextStyle by mutableStateOf(medium)
         private set
@@ -32,6 +35,7 @@ class BballTendingTypography(
         appName = other.appName
         black = other.black
         bold = other.bold
+        semiBold = other.semiBold
         medium = other.medium
         regular = other.regular
     }
@@ -40,9 +44,11 @@ class BballTendingTypography(
         appTitle: TextStyle = this.appName,
         black: TextStyle = this.black,
         bold: TextStyle = this.bold,
+        semiBold: TextStyle = this.semiBold,
         medium: TextStyle = this.medium,
         regular: TextStyle = this.regular
-    ): BballTendingTypography = BballTendingTypography(appTitle, black, bold, medium, regular)
+    ): BballTendingTypography =
+        BballTendingTypography(appTitle, black, bold, semiBold, medium, regular)
 }
 
 @Composable
@@ -64,6 +70,12 @@ fun BballTendingTypography(): BballTendingTypography {
         bold = TextStyle(
             fontFamily = PretendardBold,
             fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.5).sp,
+            color = TextBlack
+        ),
+        semiBold = TextStyle(
+            fontFamily = PretendardSemibold,
+            fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.5).sp,
             color = TextBlack
         ),

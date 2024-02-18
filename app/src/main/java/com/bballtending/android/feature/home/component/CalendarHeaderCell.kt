@@ -26,7 +26,7 @@ fun CalendarHeaderCell(
                 modifier = Modifier
                     .wrapContentSize()
                     .align(Alignment.Center),
-                style = BballTendingTheme.typography.medium.copy(fontSize = 12.sp)
+                style = BballTendingTheme.typography.semiBold.copy(fontSize = 12.sp)
             )
         }
     }

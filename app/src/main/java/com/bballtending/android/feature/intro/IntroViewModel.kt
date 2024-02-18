@@ -3,8 +3,8 @@ package com.bballtending.android.feature.intro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bballtending.android.common.util.DLog
-import com.bballtending.android.data.repository.UserPreferencesRepositoryImpl
 import com.bballtending.android.domain.login.model.ResponseLogin
+import com.bballtending.android.domain.user.repository.UserPreferencesRepository
 import com.bballtending.android.feature.intro.model.IntroUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class IntroViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepositoryImpl
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     init {
