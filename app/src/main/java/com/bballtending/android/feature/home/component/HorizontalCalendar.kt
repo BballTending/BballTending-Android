@@ -54,7 +54,7 @@ fun HorizontalCalendar(
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val calendarWidth = screenWidth.minus(60.dp)
+    val calendarWidth = screenWidth.minus(40.dp)
     val cellWidth by remember { mutableStateOf(calendarWidth.div(7)) }
 
     val initPage = (localDate.year - CalendarConfig.yearRange.first) * 12 + localDate.monthValue - 1
@@ -80,11 +80,12 @@ fun HorizontalCalendar(
         Column(
             modifier = Modifier
                 .wrapContentHeight()
-                .padding(30.dp, 30.dp, 30.dp, 40.dp)
                 .background(BballTendingTheme.colors.background)
         ) {
             // Calendar Title
             CalendarTitle(
+                modifier = Modifier
+                    .padding(start = 20.dp, top = 30.dp, end = 20.dp),
                 year = curLocalDate.year,
                 month = curLocalDate.monthValue,
                 onPrevMonth = {
@@ -113,7 +114,10 @@ fun HorizontalCalendar(
             ) { page ->
                 val date =
                     LocalDate.of(CalendarConfig.yearRange.first + page / 12, page % 12 + 1, 1)
-                Column {
+                Column(
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, bottom = 40.dp),
+                ) {
                     // Calendar Header
                     CalendarHeader(cellWidth = cellWidth)
                     // Calendar Day
@@ -169,6 +173,7 @@ fun HorizontalCalendar(
 
 @Composable
 fun CalendarTitle(
+    modifier: Modifier,
     year: Int,
     month: Int,
     onPrevMonth: () -> Unit,
@@ -176,7 +181,7 @@ fun CalendarTitle(
 ) {
     BballTendingTheme {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
         ) {
             Text(
