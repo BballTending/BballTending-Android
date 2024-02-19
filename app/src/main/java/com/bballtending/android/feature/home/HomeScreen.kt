@@ -16,7 +16,6 @@ import com.bballtending.android.feature.home.model.HomeUiState
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
 import kotlinx.collections.immutable.toImmutableMap
-import java.time.LocalDate
 
 const val HOME_SCREEN_ROUTE: String = "home"
 
@@ -35,23 +34,17 @@ fun HomeScreen(
     val uiState: HomeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     HomeScreen(
-        localDate = uiState.localDate,
         selectedDay = uiState.selectedDay,
         gameMap = uiState.gameMap,
-        onPrevMonth = homeViewModel::onPrevMonth,
-        onNextMonth = homeViewModel::onNextMonth,
-        onDayCellClick = homeViewModel::onDayCellClick
+        onSelectedDayChange = homeViewModel::onSelectedDayChange
     )
 }
 
 @Composable
 fun HomeScreen(
-    localDate: LocalDate,
     selectedDay: Int,
     gameMap: Map<Int, List<GameData>>,
-    onPrevMonth: () -> Unit,
-    onNextMonth: () -> Unit,
-    onDayCellClick: (year: Int, month: Int, day: Int) -> Unit
+    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit
 ) {
     BballTendingTheme {
         Box(
@@ -60,12 +53,8 @@ fun HomeScreen(
                 .fillMaxSize()
         ) {
             HorizontalCalendar(
-                localDate = localDate,
-                selectedDay = selectedDay,
                 gameMap = gameMap.toImmutableMap(),
-                onPrevMonth = onPrevMonth,
-                onNextMonth = onNextMonth,
-                onDayCellClick = onDayCellClick
+                onSelectedDayChange = onSelectedDayChange
             )
         }
     }

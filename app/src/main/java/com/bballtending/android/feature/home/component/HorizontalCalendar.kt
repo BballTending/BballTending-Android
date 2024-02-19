@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import com.bballtending.android.ui.noRippleClickable
 import com.bballtending.android.ui.theme.BballTendingTheme
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 private const val TAG: String = "HorizontalCalendar"
@@ -46,32 +48,32 @@ private const val TAG: String = "HorizontalCalendar"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalCalendar(
-    localDate: LocalDate,
-    selectedDay: Int,
     gameMap: ImmutableMap<Int, List<GameData>>,
-    onPrevMonth: () -> Unit,
-    onNextMonth: () -> Unit,
-    onDayCellClick: (year: Int, month: Int, day: Int) -> Unit
+    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit,
+    localDate: LocalDate = LocalDate.now()
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val calendarWidth = screenWidth.minus(60.dp)
-    val cellWidth = calendarWidth.div(7)
+    val cellWidth by remember { mutableStateOf(calendarWidth.div(7)) }
 
     val initPage = (localDate.year - CalendarConfig.yearRange.first) * 12 + localDate.monthValue - 1
-    var curMonth by remember { mutableStateOf(localDate) }
+    var curLocalDate by remember { mutableStateOf(localDate) }
     var curPage by remember { mutableStateOf(initPage) }
+    var selectedDay by remember { mutableStateOf(curLocalDate.dayOfMonth) }
     val pageCount = (CalendarConfig.yearRange.last - CalendarConfig.yearRange.first + 1) * 12
     val pagerState = rememberPagerState(
         initialPage = initPage,
         pageCount = { pageCount }
     )
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
         DLog.d(TAG, "Page changed to ${pagerState.currentPage}")
         val deltaMonth = (pagerState.currentPage - curPage).toLong()
-        curMonth = curMonth.plusMonths(deltaMonth)
+        curLocalDate = curLocalDate.plusMonths(deltaMonth).withDayOfMonth(1)
         curPage = pagerState.currentPage
+        onSelectedDayChange(curLocalDate.year, curLocalDate.monthValue, selectedDay)
     }
 
     BballTendingTheme {
@@ -83,16 +85,31 @@ fun HorizontalCalendar(
         ) {
             // Calendar Title
             CalendarTitle(
-                year = curMonth.year,
-                month = curMonth.monthValue,
-                onPrevMonth = onPrevMonth,
-                onNextMonth = onNextMonth
+                year = curLocalDate.year,
+                month = curLocalDate.monthValue,
+                onPrevMonth = {
+                    if (pagerState.currentPage > 0) {
+                        selectedDay = 1
+                        coroutineScope.launch {
+                            pagerState.scrollToPage(curPage - 1)
+                        }
+                    }
+                },
+                onNextMonth = {
+                    if (pagerState.currentPage < pagerState.pageCount - 1) {
+                        selectedDay = 1
+                        coroutineScope.launch {
+                            pagerState.scrollToPage(curPage + 1)
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(20.dp))
 
 
             HorizontalPager(
-                state = pagerState
+                state = pagerState,
+                beyondBoundsPageCount = 1
             ) { page ->
                 val date =
                     LocalDate.of(CalendarConfig.yearRange.first + page / 12, page % 12 + 1, 1)
@@ -105,7 +122,44 @@ fun HorizontalCalendar(
                         localDate = date,
                         selectedDay = selectedDay,
                         gameMap = gameMap.toImmutableMap(),
-                        onDayCellClick = onDayCellClick
+                        onDayCellClick = { year, month, day ->
+                            // 같은 달
+                            if (curLocalDate.monthValue == month) {
+                                selectedDay = day
+                                onSelectedDayChange(year, month, day)
+                            }
+                            // 다른 달
+                            else {
+                                // 내년 1월 달로 이동
+                                val nextPage = if (curLocalDate.year < year && month == 1) {
+                                    selectedDay = 1
+                                    curPage + 1
+                                }
+                                // 작년 12월 달로 이동
+                                else if (curLocalDate.year > year && month == 12) {
+                                    selectedDay = 1
+                                    curPage - 1
+                                }
+                                // 다음 달로 이동
+                                else if (curLocalDate.monthValue < month) {
+                                    selectedDay = 1
+                                    curPage + 1
+                                }
+                                // 이전 달로 이동
+                                else if (curLocalDate.monthValue > month) {
+                                    selectedDay = 1
+                                    curPage - 1
+                                }
+                                // 움직이지 않음
+                                else {
+                                    DLog.e(TAG, "year=$year, month=$month, day=$day")
+                                    0
+                                }
+                                coroutineScope.launch {
+                                    pagerState.scrollToPage(nextPage)
+                                }
+                            }
+                        }
                     )
                 }
             }

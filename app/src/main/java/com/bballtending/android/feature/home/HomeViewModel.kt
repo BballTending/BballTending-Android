@@ -2,6 +2,7 @@ package com.bballtending.android.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,32 +34,15 @@ class HomeViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    fun onPrevMonth() {
+    fun onSelectedDayChange(year: Int, month: Int, day: Int) {
+        DLog.d("${TAG}_onSelectedDayChange", "year=$year, month=$month, day=$day")
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    localDate = it.localDate.minusMonths(1),
-                    selectedDay = 1
+                    selectedYear = year,
+                    selectedMonth = month,
+                    selectedDay = day
                 )
-            }
-        }
-    }
-
-    fun onNextMonth() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    localDate = it.localDate.plusMonths(1),
-                    selectedDay = 1
-                )
-            }
-        }
-    }
-
-    fun onDayCellClick(year: Int, month: Int, day: Int) {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(selectedDay = day)
             }
         }
     }
