@@ -14,6 +14,7 @@ val TextCalendarInactiveGray = Color(0xFFA8A8A8)
 val BackCalendarInactiveGray = Color(0xFFEDEDED)
 
 val TextBlack = Color(0xFF1D1D1F)
+val ShadowBlack = Color(0x40000000)
 
 val CancelRed = Color(0xFFBF3131)
 val WinScoreRed = Color(0xFFBF3131)
