@@ -50,6 +50,7 @@ private const val TAG: String = "HorizontalCalendar"
 fun HorizontalCalendar(
     gameMap: ImmutableMap<Int, List<GameData>>,
     onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit,
+    modifier:Modifier = Modifier,
     localDate: LocalDate = LocalDate.now()
 ) {
     val configuration = LocalConfiguration.current
@@ -78,7 +79,7 @@ fun HorizontalCalendar(
 
     BballTendingTheme {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .wrapContentHeight()
                 .background(BballTendingTheme.colors.background)
         ) {
