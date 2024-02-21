@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.bballtending.android.ui.theme.ShadowBlack
 
+private const val TAG: String = "Extension"
+
 enum class Border {
     LEFT, TOP, RIGHT, BOTTOM
 }
@@ -99,8 +101,8 @@ fun Modifier.shadow(
 
             val leftPixel = offsetX.toPx()
             val topPixel = offsetY.toPx()
-            val rightPixel = size.width + topPixel
-            val bottomPixel = size.height + leftPixel
+            val rightPixel = leftPixel + size.width
+            val bottomPixel = topPixel + size.height
 
             val topLeftPixel = topLeftRound.toPx()
             val topRightPixel = topRightRound.toPx()
