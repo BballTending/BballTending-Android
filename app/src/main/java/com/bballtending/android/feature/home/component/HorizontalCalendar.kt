@@ -117,7 +117,7 @@ fun HorizontalCalendar(
                     LocalDate.of(CalendarConfig.yearRange.first + page / 12, page % 12 + 1, 1)
                 Column(
                     modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp, bottom = 40.dp),
+                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                 ) {
                     // Calendar Header
                     CalendarHeader(cellWidth = cellWidth)
