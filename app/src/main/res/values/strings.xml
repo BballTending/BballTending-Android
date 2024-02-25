@@ -4,5 +4,11 @@
     <string name="company_name">Team Wauri</string>
 
     <string name="calendar_month_format">%1$d년 %2$d월</string>
+    <string name="game_title_format">%1$d년 %2$d월 %3$d일 경기</string>
+    <string name="game_time_format">%1$d:%2$d</string>
+
+    <string name="home_chart_btn">전체 성적 보기</string>
+    <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
+    <string name="home_play_game">경기 시작하기</string>
 
 </resources>
