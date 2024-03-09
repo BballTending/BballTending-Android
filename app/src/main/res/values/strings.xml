@@ -11,4 +11,8 @@
     <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
     <string name="home_play_game">경기 시작하기</string>
 
+    <string name="gameTypeDialog_cancel">취소하기</string>
+    <string name="gameTypeDialog_fullCourt">풀 코트 경기</string>
+    <string name="gameTypeDialog_halfCourt">하프 코트 경기</string>
+
 </resources>

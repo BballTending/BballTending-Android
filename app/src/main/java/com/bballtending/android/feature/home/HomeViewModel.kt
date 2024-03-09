@@ -3,6 +3,7 @@ package com.bballtending.android.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bballtending.android.common.util.DLog
+import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,10 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun onGameTypeSelect(gameType: GameType) {
+        
     }
 
     companion object {

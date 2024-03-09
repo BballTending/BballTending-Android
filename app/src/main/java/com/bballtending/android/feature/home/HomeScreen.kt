@@ -18,6 +18,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,13 +35,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.bballtending.android.R
 import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameType
+import com.bballtending.android.feature.dialog.GameTypeDialog
 import com.bballtending.android.feature.home.component.DraggableBottomSheet
 import com.bballtending.android.feature.home.component.HorizontalCalendar
 import com.bballtending.android.feature.home.component.ScoreBoard
 import com.bballtending.android.feature.home.model.HomeUiState
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
-import com.bballtending.android.ui.theme.BorderGray
 import com.bballtending.android.ui.theme.TextHintGray
 import kotlinx.collections.immutable.toImmutableMap
 
@@ -63,7 +67,8 @@ fun HomeScreen(
         selectedMonth = uiState.selectedMonth,
         selectedDay = uiState.selectedDay,
         gameMap = uiState.gameMap,
-        onSelectedDayChange = homeViewModel::onSelectedDayChange
+        onSelectedDayChange = homeViewModel::onSelectedDayChange,
+        onGameTypeSelect = homeViewModel::onGameTypeSelect
     )
 }
 
@@ -73,9 +78,12 @@ fun HomeScreen(
     selectedMonth: Int,
     selectedDay: Int,
     gameMap: Map<Int, List<GameData>>,
-    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit
+    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit,
+    onGameTypeSelect: (gameType: GameType) -> Unit
 ) {
     val gameData = gameMap[selectedDay]
+    var gameTypeDialogVisible by remember { mutableStateOf(false) }
+
     BballTendingTheme {
         ConstraintLayout(
             modifier = Modifier
@@ -170,21 +178,12 @@ fun HomeScreen(
 
                     }
                 }
-
-                Spacer(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .width(35.dp)
-                        .height(5.dp)
-                        .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
-                        .align(Alignment.TopCenter)
-                )
             }
 
             if (gameData == null) {
                 Button(
                     onClick = {
-
+                        gameTypeDialogVisible = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -219,6 +218,18 @@ fun HomeScreen(
                     )
                 }
             }
+        }
+
+        if (gameTypeDialogVisible) {
+            GameTypeDialog(
+                onDismissRequest = {
+                    gameTypeDialogVisible = false
+                },
+                onGameTypeSelect = { gameType ->
+                    gameTypeDialogVisible = false
+                    onGameTypeSelect(gameType)
+                }
+            )
         }
     }
 }
