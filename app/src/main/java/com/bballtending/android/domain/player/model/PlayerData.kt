@@ -9,7 +9,7 @@ data class PlayerData(
     /**
      * 등번호
      */
-    val number: Int,
+    val number: String,
     /**
      * 포지션
      */

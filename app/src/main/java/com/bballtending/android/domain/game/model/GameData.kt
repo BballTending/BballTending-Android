@@ -15,8 +15,10 @@ data class GameData(
     val breakTime: Int,
     val homeTeamName: String,
     val awayTeamName: String,
-    val homeTeamScore: Int,
-    val awayTeamScore: Int,
+    val homeTeamTotalScore: Int,
+    val awayTeamTotalScore: Int,
+    val homeTeamScoreByQuarter: List<Int>,
+    val awayTeamScoreByQuarter: List<Int>,
     val homeTeamPlayer: List<PlayerData>,
     val awayTeamPlayer: List<PlayerData>
 )

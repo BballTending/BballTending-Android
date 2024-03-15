@@ -13,7 +13,7 @@ import com.bballtending.android.data.local.entity.PlayerEntity
 
 @Database(
     entities = [GameEntity::class, PlayerEntity::class, GamePlayerRelationEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

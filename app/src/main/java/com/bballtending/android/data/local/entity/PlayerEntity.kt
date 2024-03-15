@@ -10,6 +10,6 @@ data class PlayerEntity(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "player_id")
     val playerId: Long,
     val name: String,
-    val number: Int,
+    val number: String,
     val position: Position
 )

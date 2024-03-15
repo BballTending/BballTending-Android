@@ -1,5 +1,6 @@
 package com.bballtending.android.data.repository
 
+import com.bballtending.android.TestModule
 import com.bballtending.android.data.local.dao.GameDao
 import com.bballtending.android.data.local.dao.GamePlayerRelationDao
 import com.bballtending.android.data.local.database.AppDatabase
@@ -55,6 +56,19 @@ class GameRepositoryImpl @Inject constructor(
                     }
                 }
 
+                val homeTeamScoreByQuarter = listOf(
+                    gameEntity.homeTeamScore1.let { if (it > 0) it else 0 },
+                    gameEntity.homeTeamScore2.let { if (it > 0) it else 0 },
+                    gameEntity.homeTeamScore3.let { if (it > 0) it else 0 },
+                    gameEntity.homeTeamScore4.let { if (it > 0) it else 0 }
+                )
+                val awayTeamScoreByQuarter = listOf(
+                    gameEntity.awayTeamScore1.let { if (it > 0) it else 0 },
+                    gameEntity.awayTeamScore2.let { if (it > 0) it else 0 },
+                    gameEntity.awayTeamScore3.let { if (it > 0) it else 0 },
+                    gameEntity.awayTeamScore4.let { if (it > 0) it else 0 }
+                )
+
                 val day = gameEntity.day
                 val gameData = GameData(
                     gameId = gameEntity.gameId,
@@ -69,8 +83,10 @@ class GameRepositoryImpl @Inject constructor(
                     breakTime = gameEntity.breakTime,
                     homeTeamName = gameEntity.homeTeamName,
                     awayTeamName = gameEntity.awayTeamName,
-                    homeTeamScore = gameEntity.homeTeamScore,
-                    awayTeamScore = gameEntity.awayTeamScore,
+                    homeTeamTotalScore = homeTeamScoreByQuarter.sum(),
+                    awayTeamTotalScore = awayTeamScoreByQuarter.sum(),
+                    homeTeamScoreByQuarter = homeTeamScoreByQuarter,
+                    awayTeamScoreByQuarter = awayTeamScoreByQuarter,
                     homeTeamPlayer = homeTeamPlayer,
                     awayTeamPlayer = awayTeamPlayer
                 )
@@ -80,6 +96,9 @@ class GameRepositoryImpl @Inject constructor(
                     ret[day] = arrayListOf(gameData)
                 }
             }
+
+            val testData = TestModule.createTestData()
+            ret[testData.day] = arrayListOf(testData)
 
             ret
         }
