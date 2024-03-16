@@ -52,8 +52,8 @@ fun ScoreBoard(
         }
         val homeTeamName = gameData?.homeTeamName ?: "Home"
         val awayTeamName = gameData?.awayTeamName ?: "Away"
-        val homeTeamScore = gameData?.homeTeamScore ?: 0
-        val awayTeamScore = gameData?.awayTeamScore ?: 0
+        val homeTeamScore = gameData?.homeTeamTotalScore ?: 0
+        val awayTeamScore = gameData?.awayTeamTotalScore ?: 0
         val gameTime = if (gameData == null) {
             ""
         } else {
@@ -65,7 +65,8 @@ fun ScoreBoard(
             homeTeamName = homeTeamName,
             awayTeamName = awayTeamName,
             homeTeamScore = homeTeamScore,
-            awayTeamScore = awayTeamScore
+            awayTeamScore = awayTeamScore,
+            gameTime = gameTime
         )
     }
 }
