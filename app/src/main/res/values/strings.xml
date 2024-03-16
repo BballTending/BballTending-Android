@@ -1,11 +1,10 @@
 <resources>
     <string name="app_name">BballTending</string>
 
-    <string name="company_name">Team Wauri</string>
+    <string name="company_name">Team 볼텐딩</string>
 
     <string name="calendar_month_format">%1$d년 %2$d월</string>
     <string name="game_title_format">%1$d년 %2$d월 %3$d일 경기</string>
-    <string name="game_time_format">%1$d:%2$d</string>
 
     <string name="home_chart_btn">전체 성적 보기</string>
     <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
@@ -14,5 +13,17 @@
     <string name="gameTypeDialog_cancel">취소하기</string>
     <string name="gameTypeDialog_fullCourt">풀 코트 경기</string>
     <string name="gameTypeDialog_halfCourt">하프 코트 경기</string>
+
+    <string name="scoreTable_playerName">선수명</string>
+    <string name="scoreTable_score">득점</string>
+    <string name="scoreTable_rebound">리바운드</string>
+    <string name="scoreTable_assist">어시스트</string>
+    <string name="scoreTable_steal">스틸</string>
+    <string name="scoreTable_block">블록슛</string>
+    <string name="scoreTable_fieldGoal_ratio">야투</string>
+    <string name="scoreTable_fieldGoal_percentage">야투%</string>
+    <string name="scoreTable_threePoint_ratio">3점슛</string>
+    <string name="scoreTable_threePoint_percentage">3점슛%</string>
+    <string name="scoreTable_foul">파울</string>
 
 </resources>

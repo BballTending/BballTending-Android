@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
@@ -48,11 +50,15 @@ import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.feature.dialog.GameTypeDialog
 import com.bballtending.android.feature.home.component.HorizontalCalendar
 import com.bballtending.android.feature.home.component.ScoreBoard
+import com.bballtending.android.feature.home.component.ScoreTable
 import com.bballtending.android.feature.home.model.HomeUiState
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
 import com.bballtending.android.ui.theme.BorderGray
+import com.bballtending.android.ui.theme.TextBlack
 import com.bballtending.android.ui.theme.TextHintGray
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 
 const val HOME_SCREEN_ROUTE: String = "home"
@@ -110,32 +116,12 @@ fun HomeScreen(
         ) {
             BottomSheetScaffold(
                 sheetContent = {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        ScoreBoard(
-                            selectedYear = selectedYear,
-                            selectedMonth = selectedMonth,
-                            selectedDay = selectedDay,
-                            gameData = gameData?.firstOrNull()
-                        )
-
-                        // 게임 기록이 없는 경우
-                        if (gameData == null) {
-                            Spacer(Modifier.height(25.dp))
-                            Text(
-                                text = stringResource(id = R.string.home_no_game_record),
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally),
-                                style = BballTendingTheme.typography.medium.copy(
-                                    color = TextHintGray,
-                                    fontSize = 12.sp
-                                )
-                            )
-                        }
-                        // 게임 기록이 있는 경우
-                        else {
-
-                        }
-                    }
+                    HomeScreenSheetContent(
+                        selectedYear = selectedYear,
+                        selectedMonth = selectedMonth,
+                        selectedDay = selectedDay,
+                        gameData = gameData?.toImmutableList()
+                    )
                 },
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = if (peekInitY == 0) {
@@ -153,6 +139,7 @@ fun HomeScreen(
                             .align(Alignment.TopCenter)
                     )
                 },
+                sheetSwipeEnabled = gameData?.isNotEmpty() ?: false,
                 sheetContainerColor = BballTendingTheme.colors.background,
                 sheetShadowElevation = 5.dp
             ) {
@@ -264,6 +251,91 @@ fun HomeScreen(
                     gameTypeDialogVisible = false
                     onGameTypeSelect(gameType)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeScreenSheetContent(
+    selectedYear: Int,
+    selectedMonth: Int,
+    selectedDay: Int,
+    gameData: ImmutableList<GameData>?
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScoreBoard(
+            selectedYear = selectedYear,
+            selectedMonth = selectedMonth,
+            selectedDay = selectedDay,
+            gameData = gameData?.firstOrNull()
+        )
+
+        // 게임 기록이 없는 경우
+        if (gameData == null) {
+            Spacer(Modifier.height(25.dp))
+            Text(
+                text = stringResource(id = R.string.home_no_game_record),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+                style = BballTendingTheme.typography.medium.copy(
+                    color = TextHintGray,
+                    fontSize = 12.sp
+                )
+            )
+        }
+        // 게임 기록이 있는 경우
+        else {
+            Row(
+                modifier = Modifier.padding(start = 15.dp, top = 17.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.icon_home_team),
+                    contentDescription = "홈 팀 로고",
+                    modifier = Modifier
+                        .width(25.dp)
+                        .height(25.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Text(
+                    text = gameData.first().homeTeamName,
+                    modifier = Modifier.padding(start = 7.dp),
+                    style = BballTendingTheme.typography.bold.copy(
+                        color = TextBlack,
+                        fontSize = 18.sp
+                    )
+                )
+            }
+            ScoreTable(
+                playerDataList = gameData.first().homeTeamPlayer.toImmutableList(),
+                modifier = Modifier.padding(top = 10.dp)
+            )
+
+            Row(
+                modifier = Modifier.padding(start = 15.dp, top = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.icon_away_team),
+                    contentDescription = "어웨이 팀 로고",
+                    modifier = Modifier
+                        .width(25.dp)
+                        .height(25.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Text(
+                    text = gameData.first().awayTeamName,
+                    modifier = Modifier.padding(start = 7.dp),
+                    style = BballTendingTheme.typography.bold.copy(
+                        color = TextBlack,
+                        fontSize = 18.sp
+                    )
+                )
+            }
+            ScoreTable(
+                playerDataList = gameData.first().awayTeamPlayer.toImmutableList(),
+                modifier = Modifier.padding(top = 10.dp)
             )
         }
     }
