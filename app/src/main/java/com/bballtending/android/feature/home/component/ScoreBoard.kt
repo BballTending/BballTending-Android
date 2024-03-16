@@ -38,8 +38,8 @@ fun ScoreBoard(
 ) {
     BballTendingTheme {
         val gameType = when (gameData?.gameType) {
-            GameType.FULL_COURT -> "5X5"
-            GameType.HALF_COURT -> "3X3"
+            GameType.FULL_COURT -> "(5X5)"
+            GameType.HALF_COURT -> "(3X3)"
             else -> ""
         }
         val gameTitle = stringResource(
@@ -57,7 +57,13 @@ fun ScoreBoard(
         val gameTime = if (gameData == null) {
             ""
         } else {
-            stringResource(id = R.string.game_time_format, gameData.hour, gameData.minute)
+            val hour = gameData.hour.let {
+                if (it > 10) it.toString() else "0$it"
+            }
+            val minute = gameData.minute.let {
+                if (it > 10) it.toString() else "0$it"
+            }
+            "$hour:$minute"
         }
 
         ScoreBoard(
@@ -99,7 +105,7 @@ private fun ScoreBoard(
             text = gameTitle,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
-            style = BballTendingTheme.typography.medium.copy(fontSize = 14.sp)
+            style = BballTendingTheme.typography.bold.copy(fontSize = 14.sp)
         )
         Spacer(Modifier.height(20.dp))
         Row(
