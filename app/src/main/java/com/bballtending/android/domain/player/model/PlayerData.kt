@@ -19,6 +19,14 @@ data class PlayerData(
      */
     val score: Int,
     /**
+     * 야투 시도 횟수
+     */
+    val fieldGoalAttempt: Int,
+    /**
+     * 야투 성공 횟수
+     */
+    val fieldGoalSuccess: Int,
+    /**
      * 2점 슛 시도 횟수
      */
     val twoPointAttempt: Int,
@@ -58,4 +66,20 @@ data class PlayerData(
      * 파울
      */
     val foul: Int
-)
+) {
+    val fieldGoalRatio: String
+        get() = "$fieldGoalSuccess/$fieldGoalAttempt"
+
+    val fieldGoalPercentage: Float
+        get() = (1f * fieldGoalSuccess / fieldGoalAttempt).let {
+            if (it.isNaN()) 0.0f else it
+        }
+
+    val threePointRatio: String
+        get() = "$threePointSuccess/$threePointAttempt"
+
+    val threePointPercentage: Float
+        get() = (1f * threePointSuccess / threePointAttempt).let {
+            if (it.isNaN()) 0.0f else it
+        }
+}

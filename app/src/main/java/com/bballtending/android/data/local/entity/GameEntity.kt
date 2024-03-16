@@ -25,20 +25,20 @@ data class GameEntity(
     val homeTeamName: String,
     @ColumnInfo(name = "away_team_name")
     val awayTeamName: String,
-    @ColumnInfo(name = "home_team_score_1")
+    @ColumnInfo(name = "home_team_score_1", defaultValue = "0")
     val homeTeamScore1: Int,
-    @ColumnInfo(name = "home_team_score_2")
+    @ColumnInfo(name = "home_team_score_2", defaultValue = "0")
     val homeTeamScore2: Int,
-    @ColumnInfo(name = "home_team_score_3")
+    @ColumnInfo(name = "home_team_score_3", defaultValue = "0")
     val homeTeamScore3: Int,
-    @ColumnInfo(name = "home_team_score_4")
+    @ColumnInfo(name = "home_team_score_4", defaultValue = "0")
     val homeTeamScore4: Int,
-    @ColumnInfo(name = "away_team_score_1")
+    @ColumnInfo(name = "away_team_score_1", defaultValue = "0")
     val awayTeamScore1: Int,
-    @ColumnInfo(name = "away_team_score_2")
+    @ColumnInfo(name = "away_team_score_2", defaultValue = "0")
     val awayTeamScore2: Int,
-    @ColumnInfo(name = "away_team_score_3")
+    @ColumnInfo(name = "away_team_score_3", defaultValue = "0")
     val awayTeamScore3: Int,
-    @ColumnInfo(name = "away_team_score_4")
+    @ColumnInfo(name = "away_team_score_4", defaultValue = "0")
     val awayTeamScore4: Int
 )
