@@ -72,7 +72,7 @@ data class PlayerData(
 
     val fieldGoalPercentage: Float
         get() = (1f * fieldGoalSuccess / fieldGoalAttempt).let {
-            if (it.isNaN()) 0.0f else it
+            if (it.isNaN()) 0.0f else it * 100
         }
 
     val threePointRatio: String
@@ -80,6 +80,6 @@ data class PlayerData(
 
     val threePointPercentage: Float
         get() = (1f * threePointSuccess / threePointAttempt).let {
-            if (it.isNaN()) 0.0f else it
+            if (it.isNaN()) 0.0f else it * 100
         }
 }
