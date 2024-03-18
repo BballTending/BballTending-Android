@@ -9,6 +9,7 @@
     <string name="home_chart_btn">전체 성적 보기</string>
     <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
     <string name="home_play_game">경기 시작하기</string>
+    <string name="home_add_game">경기 추가하기</string>
 
     <string name="gameTypeDialog_cancel">취소하기</string>
     <string name="gameTypeDialog_fullCourt">풀 코트 경기</string>

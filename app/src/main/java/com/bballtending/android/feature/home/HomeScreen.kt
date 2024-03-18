@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -253,6 +255,48 @@ fun HomeScreen(
                     )
                 }
             }
+            if (isExpanded) {
+                Button(
+                    onClick = {
+                        gameTypeDialogVisible = true
+                    },
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(bottom = 25.dp)
+                        .align(Alignment.BottomCenter),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = BballTendingTheme.colors.primary
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 1.dp
+                    ),
+                    border = BorderStroke(1.dp, BballTendingTheme.colors.primary),
+                    contentPadding = PaddingValues(
+                        start = 12.dp,
+                        top = 0.dp,
+                        end = 12.dp,
+                        bottom = 0.dp
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_add),
+                        contentDescription = "Add",
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = stringResource(id = R.string.home_add_game),
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        style = BballTendingTheme.typography.medium.copy(
+                            color = BballTendingTheme.colors.primary,
+                            fontSize = 12.sp
+                        )
+                    )
+                }
+            }
         }
 
         if (gameTypeDialogVisible) {
@@ -296,7 +340,7 @@ private fun HomeScreenPartiallyExpandedSheetContent(
 
         // 게임 기록이 없는 경우
         if (gameData == null) {
-            NoGameInfo()
+            NoGameInfo(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
         // 게임 기록이 있는 경우
         else {
@@ -332,12 +376,17 @@ private fun HomeScreenExpandedSheetContent(
                 selectedDay = selectedDay,
                 gameData = null
             )
-            NoGameInfo()
+            NoGameInfo(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
     }
     // 게임 기록이 있는 경우
     else {
-        Column(modifier = Modifier.fillMaxSize()) {
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -362,13 +411,13 @@ private fun HomeScreenExpandedSheetContent(
                         isOnPrimary = true,
                         isDetail = true
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
                     CircleIndicator(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         curIdx = curGameIdx,
                         max = gameData.size
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 if (curGameIdx > 0) {
@@ -393,6 +442,7 @@ private fun HomeScreenExpandedSheetContent(
                 }
             }
             GameScoreTable(gameData.first())
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
