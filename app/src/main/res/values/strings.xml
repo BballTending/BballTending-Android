@@ -26,4 +26,11 @@
     <string name="scoreTable_threePoint_percentage">3점슛%</string>
     <string name="scoreTable_foul">파울</string>
 
+    <string name="scoreBoard_teamName">팀명</string>
+    <string name="scoreBoard_firstQuarter">1Q</string>
+    <string name="scoreBoard_secondQuarter">2Q</string>
+    <string name="scoreBoard_thirdQuarter">3Q</string>
+    <string name="scoreBoard_fourthQuarter">4Q</string>
+    <string name="scoreBoard_totalScore">TOTAL</string>
+
 </resources>

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
@@ -20,10 +21,14 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,10 +53,12 @@ import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.model.GameData
 import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.feature.dialog.GameTypeDialog
+import com.bballtending.android.feature.home.component.CircleIndicator
 import com.bballtending.android.feature.home.component.HorizontalCalendar
 import com.bballtending.android.feature.home.component.ScoreBoard
 import com.bballtending.android.feature.home.component.ScoreTable
 import com.bballtending.android.feature.home.model.HomeUiState
+import com.bballtending.android.ui.noRippleClickable
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
 import com.bballtending.android.ui.theme.BorderGray
@@ -103,6 +110,12 @@ fun HomeScreen(
         bottomSheetState
     }
 
+    var isExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(key1 = scaffoldState.bottomSheetState.currentValue) {
+        val currentValue = scaffoldState.bottomSheetState.currentValue
+        isExpanded = currentValue == SheetValue.Expanded
+    }
+
     val screenHeightDp = with(LocalConfiguration.current) {
         screenHeightDp
     }
@@ -116,12 +129,21 @@ fun HomeScreen(
         ) {
             BottomSheetScaffold(
                 sheetContent = {
-                    HomeScreenSheetContent(
-                        selectedYear = selectedYear,
-                        selectedMonth = selectedMonth,
-                        selectedDay = selectedDay,
-                        gameData = gameData?.toImmutableList()
-                    )
+                    if (isExpanded) {
+                        HomeScreenExpandedSheetContent(
+                            selectedYear = selectedYear,
+                            selectedMonth = selectedMonth,
+                            selectedDay = selectedDay,
+                            gameData = gameData?.toImmutableList()
+                        )
+                    } else {
+                        HomeScreenPartiallyExpandedSheetContent(
+                            selectedYear = selectedYear,
+                            selectedMonth = selectedMonth,
+                            selectedDay = selectedDay,
+                            gameData = gameData?.toImmutableList()
+                        )
+                    }
                 },
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = if (peekInitY == 0) {
@@ -129,16 +151,7 @@ fun HomeScreen(
                 } else {
                     (screenHeightDp - with(LocalDensity.current) { peekInitY / density }).dp
                 },
-                sheetDragHandle = {
-                    Spacer(
-                        modifier = Modifier
-                            .padding(top = 15.dp)
-                            .width(35.dp)
-                            .height(5.dp)
-                            .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
-                            .align(Alignment.TopCenter)
-                    )
-                },
+                sheetDragHandle = null,
                 sheetSwipeEnabled = gameData?.isNotEmpty() ?: false,
                 sheetContainerColor = BballTendingTheme.colors.background,
                 sheetShadowElevation = 5.dp
@@ -257,13 +270,23 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeScreenSheetContent(
+private fun HomeScreenPartiallyExpandedSheetContent(
     selectedYear: Int,
     selectedMonth: Int,
     selectedDay: Int,
     gameData: ImmutableList<GameData>?
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(
+            modifier = Modifier
+                .padding(top = 15.dp)
+                .width(35.dp)
+                .height(5.dp)
+                .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
+                .align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(25.dp))
+
         ScoreBoard(
             selectedYear = selectedYear,
             selectedMonth = selectedMonth,
@@ -273,19 +296,114 @@ private fun HomeScreenSheetContent(
 
         // 게임 기록이 없는 경우
         if (gameData == null) {
-            Spacer(Modifier.height(25.dp))
-            Text(
-                text = stringResource(id = R.string.home_no_game_record),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
-                style = BballTendingTheme.typography.medium.copy(
-                    color = TextHintGray,
-                    fontSize = 12.sp
-                )
-            )
+            NoGameInfo()
         }
         // 게임 기록이 있는 경우
         else {
+            GameScoreTable(gameData.first())
+        }
+    }
+}
+
+@Composable
+private fun HomeScreenExpandedSheetContent(
+    selectedYear: Int,
+    selectedMonth: Int,
+    selectedDay: Int,
+    gameData: ImmutableList<GameData>?
+) {
+    var curGameIdx by remember { mutableIntStateOf(0) }
+
+    // 게임 기록이 없는 경우
+    if (gameData == null) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(
+                modifier = Modifier
+                    .padding(top = 15.dp)
+                    .width(35.dp)
+                    .height(5.dp)
+                    .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
+                    .align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            ScoreBoard(
+                selectedYear = selectedYear,
+                selectedMonth = selectedMonth,
+                selectedDay = selectedDay,
+                gameData = null
+            )
+            NoGameInfo()
+        }
+    }
+    // 게임 기록이 있는 경우
+    else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .background(color = BballTendingTheme.colors.primary)
+            ) {
+                Column {
+                    Spacer(
+                        modifier = Modifier
+                            .padding(top = 15.dp)
+                            .width(35.dp)
+                            .height(5.dp)
+                            .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
+                            .align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.height(25.dp))
+                    ScoreBoard(
+                        selectedYear = selectedYear,
+                        selectedMonth = selectedMonth,
+                        selectedDay = selectedDay,
+                        gameData = gameData[curGameIdx],
+                        isOnPrimary = true,
+                        isDetail = true
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    CircleIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        curIdx = curGameIdx,
+                        max = gameData.size
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (curGameIdx > 0) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_left_arrow_active),
+                        contentDescription = "왼쪽 화살표",
+                        modifier = Modifier.noRippleClickable {
+                            curGameIdx -= 1
+                        },
+                        tint = Color.White
+                    )
+                }
+                if (curGameIdx < gameData.size - 1) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_right_arrow_active),
+                        contentDescription = "왼쪽 화살표",
+                        modifier = Modifier.noRippleClickable {
+                            curGameIdx + 1
+                        },
+                        tint = Color.White
+                    )
+                }
+            }
+            GameScoreTable(gameData.first())
+        }
+    }
+}
+
+@Composable
+private fun GameScoreTable(
+    gameData: GameData,
+    modifier: Modifier = Modifier
+) {
+    BballTendingTheme {
+        Column(modifier = modifier) {
             Row(
                 modifier = Modifier.padding(start = 15.dp, top = 17.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -299,7 +417,7 @@ private fun HomeScreenSheetContent(
                     contentScale = ContentScale.Fit
                 )
                 Text(
-                    text = gameData.first().homeTeamName,
+                    text = gameData.homeTeamName,
                     modifier = Modifier.padding(start = 7.dp),
                     style = BballTendingTheme.typography.bold.copy(
                         color = TextBlack,
@@ -308,7 +426,7 @@ private fun HomeScreenSheetContent(
                 )
             }
             ScoreTable(
-                playerDataList = gameData.first().homeTeamPlayer.toImmutableList(),
+                playerDataList = gameData.homeTeamPlayer.toImmutableList(),
                 modifier = Modifier.padding(top = 10.dp)
             )
 
@@ -325,7 +443,7 @@ private fun HomeScreenSheetContent(
                     contentScale = ContentScale.Fit
                 )
                 Text(
-                    text = gameData.first().awayTeamName,
+                    text = gameData.awayTeamName,
                     modifier = Modifier.padding(start = 7.dp),
                     style = BballTendingTheme.typography.bold.copy(
                         color = TextBlack,
@@ -334,8 +452,28 @@ private fun HomeScreenSheetContent(
                 )
             }
             ScoreTable(
-                playerDataList = gameData.first().awayTeamPlayer.toImmutableList(),
+                playerDataList = gameData.awayTeamPlayer.toImmutableList(),
                 modifier = Modifier.padding(top = 10.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun NoGameInfo(
+    modifier: Modifier = Modifier
+) {
+    BballTendingTheme {
+        Column(modifier = modifier) {
+            Spacer(Modifier.height(25.dp))
+            Text(
+                text = stringResource(id = R.string.home_no_game_record),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+                style = BballTendingTheme.typography.medium.copy(
+                    color = TextHintGray,
+                    fontSize = 12.sp
+                )
             )
         }
     }
