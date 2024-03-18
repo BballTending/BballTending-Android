@@ -145,7 +145,6 @@ private fun ScoreBoard(
                 contentDescription = "HomeTeam Logo",
                 modifier = Modifier.constrainAs(homeTeamIconRef) {
                     end.linkTo(scoreLayoutRef.start, margin = 5.dp)
-                    centerVerticallyTo(parent)
                 }
             )
             Text(
@@ -219,7 +218,6 @@ private fun ScoreBoard(
                 contentDescription = "AwayTeam Logo",
                 modifier = Modifier.constrainAs(awayTeamLogoRef) {
                     start.linkTo(scoreLayoutRef.end, margin = 5.dp)
-                    centerVerticallyTo(parent)
                 }
             )
             Text(
