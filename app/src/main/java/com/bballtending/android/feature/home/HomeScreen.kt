@@ -175,8 +175,8 @@ fun HomeScreen(
 
                             },
                             modifier = Modifier
-                                .wrapContentSize()
                                 .padding(top = 3.dp, end = 20.dp, bottom = 15.dp)
+                                .wrapContentSize()
                                 .align(Alignment.End)
                                 .onGloballyPositioned {
                                     if (initFlag == 0) {
@@ -226,8 +226,8 @@ fun HomeScreen(
                         gameTypeDialogVisible = true
                     },
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(start = 80.dp, end = 80.dp, bottom = 30.dp)
+                        .fillMaxWidth()
                         .align(Alignment.BottomCenter),
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -261,10 +261,10 @@ fun HomeScreen(
                         gameTypeDialogVisible = true
                     },
                     modifier = Modifier
-                        .wrapContentSize()
                         .padding(bottom = 25.dp)
+                        .wrapContentSize()
                         .align(Alignment.BottomCenter),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
                         contentColor = BballTendingTheme.colors.primary
