@@ -107,6 +107,9 @@ dependencies {
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:$room_version")
 
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
 }
 
 kotlin {
