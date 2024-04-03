@@ -5,6 +5,9 @@
 
     <string name="calendar_month_format">%1$d년 %2$d월</string>
     <string name="game_title_format">%1$d년 %2$d월 %3$d일 경기</string>
+    <string name="quarter_format">%1$dQ</string>
+    <string name="playTime_format">%1$d분</string>
+    <string name="breakTime_format">%1$d분</string>
 
     <string name="home_chart_btn">전체 성적 보기</string>
     <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
@@ -12,8 +15,8 @@
     <string name="home_add_game">경기 추가하기</string>
 
     <string name="gameTypeDialog_cancel">취소하기</string>
-    <string name="gameTypeDialog_fullCourt">풀 코트 경기</string>
-    <string name="gameTypeDialog_halfCourt">하프 코트 경기</string>
+    <string name="gameType_fullCourt">풀 코트 경기</string>
+    <string name="gameType_halfCourt">하프 코트 경기</string>
 
     <string name="scoreTable_playerName">선수명</string>
     <string name="scoreTable_score">득점</string>
@@ -33,5 +36,17 @@
     <string name="scoreBoard_thirdQuarter">3Q</string>
     <string name="scoreBoard_fourthQuarter">4Q</string>
     <string name="scoreBoard_totalScore">TOTAL</string>
+
+    <string name="addGame_title">경기 추가하기</string>
+    <string name="addGame_playingNowContent_title">경기를 추가하실 방법을 선택해 주세요.</string>
+    <string name="addGame_playingNowContent_playingNow">지금 경기를 시작할래요.</string>
+    <string name="addGame_playingNowContent_lastGame">지난 경기 결과를 입력할래요.</string>
+    <string name="addGame_gameTypeContent_title">경기 종류를 선택해 주세요.</string>
+    <string name="addGame_gameTimeContent_title">경기 시간을 알려주세요.</string>
+    <string name="addGame_gameTimeContent_quarter">쿼 터</string>
+    <string name="addGame_gameTimeContent_playTime">경기 시간</string>
+    <string name="addGame_gameTimeContent_breakTime">쉬는 시간</string>
+    <string name="addGame_playerInfoContent_title">%1$s 선수 정보를 입력해 주세요.</string>
+    <string name="addGame_playerInfoContent_totalPlayer">총 인원: %1$d명</string>
 
 </resources>

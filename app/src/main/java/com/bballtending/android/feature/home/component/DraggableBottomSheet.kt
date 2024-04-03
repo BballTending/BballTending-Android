@@ -6,11 +6,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,6 +20,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.bballtending.android.common.util.DLog
 import com.bballtending.android.ui.preview.ComponentPreview
 import com.bballtending.android.ui.theme.BballTendingTheme
+import com.bballtending.android.ui.theme.BorderGray
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -61,49 +65,6 @@ fun DraggableBottomSheet(
                 .offset {
                     IntOffset(x = 0, y = offsetY.value.roundToInt())
                 }
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragStart = { offset: Offset ->
-                            DLog.d(TAG, "offset=$offset")
-                        },
-                        onVerticalDrag = { _: PointerInputChange, dragAmount: Float ->
-                            coroutineScope.launch {
-                                offsetY.snapTo(
-                                    (offsetY.value + dragAmount).coerceIn(
-                                        maximumValue = 0f,
-                                        minimumValue = -initY + marginTop
-                                    )
-                                )
-                            }
-                        },
-                        onDragEnd = {
-                            val absOffsetY = offsetY.value.absoluteValue
-                            DLog.d(TAG, "onDragEnd, absOffsetY=$absOffsetY")
-                            val threshold = initY.div(2)
-                            if (absOffsetY > threshold) {
-                                coroutineScope.launch {
-                                    offsetY.animateTo(
-                                        targetValue = -initY + marginTop,
-                                        animationSpec = tween(
-                                            durationMillis = ANIM_DURATION,
-                                            delayMillis = 0
-                                        )
-                                    )
-                                }
-                            } else {
-                                coroutineScope.launch {
-                                    offsetY.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = tween(
-                                            durationMillis = ANIM_DURATION,
-                                            delayMillis = 0
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    )
-                }
                 .shadow(
                     elevation = 5.dp,
                     shape = RoundedCornerShape(16.dp)
@@ -121,6 +82,63 @@ fun DraggableBottomSheet(
                 }
         ) {
             content()
+
+            Spacer(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .width(35.dp)
+                    .height(5.dp)
+                    .background(color = BorderGray, shape = RoundedCornerShape(10.dp))
+                    .align(Alignment.TopCenter)
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragStart = { offset: Offset ->
+                                DLog.d(TAG, "offset=$offset")
+                            },
+                            onVerticalDrag = { _: PointerInputChange, dragAmount: Float ->
+                                coroutineScope.launch {
+                                    offsetY.snapTo(
+                                        (offsetY.value + dragAmount).coerceIn(
+                                            maximumValue = 0f,
+                                            minimumValue = -initY + marginTop
+                                        )
+                                    )
+                                }
+                            },
+                            onDragEnd = {
+                                val absOffsetY = offsetY.value.absoluteValue
+                                DLog.d(TAG, "onDragEnd, absOffsetY=$absOffsetY")
+                                val threshold = initY.div(2)
+                                if (absOffsetY > threshold) {
+                                    coroutineScope.launch {
+                                        offsetY.animateTo(
+                                            targetValue = -initY + marginTop,
+                                            animationSpec = tween(
+                                                durationMillis = ANIM_DURATION,
+                                                delayMillis = 0
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    coroutineScope.launch {
+                                        offsetY.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = tween(
+                                                durationMillis = ANIM_DURATION,
+                                                delayMillis = 0
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+            )
         }
     }
 }

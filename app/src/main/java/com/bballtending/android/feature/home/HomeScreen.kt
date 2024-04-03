@@ -72,16 +72,19 @@ import kotlinx.collections.immutable.toImmutableMap
 
 const val HOME_SCREEN_ROUTE: String = "home"
 
-fun NavGraphBuilder.homeScreen() {
+fun NavGraphBuilder.homeScreen(
+    onGameTypeSelect: (gameType: GameType) -> Unit
+) {
     composable(
         route = HOME_SCREEN_ROUTE
     ) {
-        HomeScreen()
+        HomeScreen(onGameTypeSelect)
     }
 }
 
 @Composable
-fun HomeScreen(
+private fun HomeScreen(
+    onGameTypeSelect: (gameType: GameType) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState: HomeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
@@ -92,13 +95,13 @@ fun HomeScreen(
         selectedDay = uiState.selectedDay,
         gameMap = uiState.gameMap,
         onSelectedDayChange = homeViewModel::onSelectedDayChange,
-        onGameTypeSelect = homeViewModel::onGameTypeSelect
+        onGameTypeSelect = onGameTypeSelect
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+private fun HomeScreen(
     selectedYear: Int,
     selectedMonth: Int,
     selectedDay: Int,
@@ -531,8 +534,10 @@ private fun NoGameInfo(
 
 @DevicePreview
 @Composable
-fun HomeScreenPreview() {
+private fun HomeScreenPreview() {
     BballTendingTheme {
-        HomeScreen()
+        HomeScreen(
+            onGameTypeSelect = {}
+        )
     }
 }
