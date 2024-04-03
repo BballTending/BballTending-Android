@@ -87,7 +87,7 @@ fun GameTypeDialog(
                                 )
                         ) {
                             Text(
-                                text = stringResource(id = R.string.gameTypeDialog_fullCourt),
+                                text = stringResource(id = R.string.gameType_fullCourt),
                                 modifier = Modifier.wrapContentSize(),
                                 style = BballTendingTheme.typography.medium.copy(
                                     color = TextBlack,
@@ -111,7 +111,7 @@ fun GameTypeDialog(
                             .height(50.dp)
                     ) {
                         Text(
-                            text = stringResource(id = R.string.gameTypeDialog_halfCourt),
+                            text = stringResource(id = R.string.gameType_halfCourt),
                             modifier = Modifier.wrapContentSize(),
                             style = BballTendingTheme.typography.medium.copy(
                                 color = TextBlack,
