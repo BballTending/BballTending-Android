@@ -26,11 +26,11 @@ fun BballTendingApp(
             )
             addGameScreen(
                 onClose = {
-                    navController.navigate(HOME_SCREEN_ROUTE) {
-                        popUpTo(HOME_SCREEN_ROUTE) {
-                            inclusive = false
-                        }
-                    }
+                    navController.popBackStack(
+                        route = HOME_SCREEN_ROUTE,
+                        inclusive = false,
+                        saveState = false
+                    )
                 }
             )
         }
