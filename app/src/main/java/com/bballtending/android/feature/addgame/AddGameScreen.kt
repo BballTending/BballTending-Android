@@ -548,10 +548,11 @@ private fun PlayerInfoContent(
     onPlayerRemoved: (Boolean, String, String, Position) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val teamName = if (isHomeTeam) "홈 팀" else "어웨이 팀"
     BballTendingTheme {
         Column(modifier = modifier) {
             Text(
-                text = stringResource(id = R.string.addGame_playerInfoContent_title, "홈 팀"),
+                text = stringResource(id = R.string.addGame_playerInfoContent_title, teamName),
                 modifier = Modifier.padding(start = 15.dp, top = 20.dp),
                 style = BballTendingTheme.typography.bold.copy(fontSize = 16.sp)
             )
