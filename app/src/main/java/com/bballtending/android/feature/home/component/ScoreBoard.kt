@@ -37,9 +37,9 @@ import com.bballtending.android.ui.theme.WinScoreRed
 
 @Composable
 fun ScoreBoard(
-    selectedYear: Int,
-    selectedMonth: Int,
-    selectedDay: Int,
+    year: Int,
+    month: Int,
+    day: Int,
     gameData: GameData? = null,
     isOnPrimary: Boolean = false,
     isDetail: Boolean = false
@@ -52,9 +52,9 @@ fun ScoreBoard(
         }
         val gameTitle = stringResource(
             id = R.string.game_title_format,
-            selectedYear,
-            selectedMonth,
-            selectedDay
+            year,
+            month,
+            day
         ).let {
             if (gameType.isNotEmpty()) "$it $gameType" else it
         }
