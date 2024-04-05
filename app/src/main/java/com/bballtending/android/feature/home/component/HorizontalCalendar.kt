@@ -1,7 +1,6 @@
 package com.bballtending.android.feature.home.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,138 +33,106 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bballtending.android.R
-import com.bballtending.android.common.util.DLog
-import com.bballtending.android.domain.calendar.model.CalendarConfig
-import com.bballtending.android.domain.calendar.model.DayOfWeek
-import com.bballtending.android.domain.game.model.GameData
-import com.bballtending.android.ui.noRippleClickable
+import com.bballtending.android.domain.game.model.GameDate
+import com.bballtending.android.ui.preview.ComponentPreview
 import com.bballtending.android.ui.theme.BballTendingTheme
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-
-private const val TAG: String = "HorizontalCalendar"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalCalendar(
-    gameMap: ImmutableMap<Int, List<GameData>>,
-    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit,
-    modifier:Modifier = Modifier,
-    localDate: LocalDate = LocalDate.now()
+    gameExistDate: ImmutableSet<GameDate>,
+    onDateChange: (GameDate) -> Unit,
+    modifier: Modifier = Modifier,
+    currentDate: LocalDate = LocalDate.now()
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val calendarWidth = screenWidth.minus(40.dp)
     val cellWidth by remember { mutableStateOf(calendarWidth.div(7)) }
 
-    val initPage = (localDate.year - CalendarConfig.yearRange.first) * 12 + localDate.monthValue - 1
-    var curLocalDate by remember { mutableStateOf(localDate) }
-    var curPage by remember { mutableStateOf(initPage) }
-    var selectedDay by remember { mutableStateOf(curLocalDate.dayOfMonth) }
+    val initPage =
+        (currentDate.year - CalendarConfig.yearRange.first) * 12 + currentDate.monthValue - 1
     val pageCount = (CalendarConfig.yearRange.last - CalendarConfig.yearRange.first + 1) * 12
-    val pagerState = rememberPagerState(
-        initialPage = initPage,
-        pageCount = { pageCount }
-    )
-    val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(pagerState.currentPage) {
-        DLog.d(TAG, "Page changed to ${pagerState.currentPage}")
-        val deltaMonth = (pagerState.currentPage - curPage).toLong()
-        curLocalDate = curLocalDate.plusMonths(deltaMonth).withDayOfMonth(1)
-        curPage = pagerState.currentPage
-        onSelectedDayChange(curLocalDate.year, curLocalDate.monthValue, selectedDay)
+    var selectedDate by remember { mutableStateOf(currentDate) }
+    var currentPage by remember { mutableIntStateOf(initPage) }
+    val pagerState = rememberPagerState(initialPage = initPage, pageCount = { pageCount })
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = selectedDate) {
+        onDateChange(
+            GameDate(
+                year = selectedDate.year,
+                month = selectedDate.monthValue,
+                day = selectedDate.dayOfMonth
+            )
+        )
+    }
+
+    LaunchedEffect(key1 = pagerState.currentPage) {
+        val delta = (pagerState.currentPage - currentPage).toLong()
+        val day = selectedDate.dayOfMonth
+        selectedDate = selectedDate.plusMonths(delta).let {
+            if (day in 1..it.lengthOfMonth()) it else it.withDayOfMonth(1)
+        }
+        currentPage = pagerState.currentPage
     }
 
     BballTendingTheme {
         Column(
             modifier = modifier
-                .wrapContentHeight()
-                .background(BballTendingTheme.colors.background)
+                .fillMaxWidth()
+                .background(color = BballTendingTheme.colors.background)
         ) {
-            // Calendar Title
             CalendarTitle(
-                modifier = Modifier
-                    .padding(start = 20.dp, top = 30.dp, end = 20.dp),
-                year = curLocalDate.year,
-                month = curLocalDate.monthValue,
+                selectedDate = selectedDate,
+                prevMonthEnable = pagerState.currentPage > 0,
+                nextMonthEnable = pagerState.currentPage < pagerState.pageCount - 1,
                 onPrevMonth = {
                     if (pagerState.currentPage > 0) {
-                        selectedDay = 1
-                        coroutineScope.launch {
-                            pagerState.scrollToPage(curPage - 1)
+                        scope.launch {
+                            pagerState.animateScrollToPage(currentPage - 1)
                         }
                     }
                 },
                 onNextMonth = {
                     if (pagerState.currentPage < pagerState.pageCount - 1) {
-                        selectedDay = 1
-                        coroutineScope.launch {
-                            pagerState.scrollToPage(curPage + 1)
+                        scope.launch {
+                            pagerState.animateScrollToPage(currentPage + 1)
                         }
                     }
-                }
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-
+                })
 
             HorizontalPager(
                 state = pagerState,
-                beyondBoundsPageCount = 1
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .align(Alignment.CenterHorizontally),
+                beyondBoundsPageCount = 2
             ) { page ->
-                val date =
-                    LocalDate.of(CalendarConfig.yearRange.first + page / 12, page % 12 + 1, 1)
+                val date = LocalDate.of(
+                    CalendarConfig.yearRange.first + page / 12,
+                    page % 12 + 1,
+                    1
+                )
+
                 Column(
                     modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
+                        .fillMaxWidth()
                 ) {
-                    // Calendar Header
                     CalendarHeader(cellWidth = cellWidth)
-                    // Calendar Day
                     CalendarDay(
                         cellWidth = cellWidth,
                         localDate = date,
-                        selectedDay = selectedDay,
-                        gameMap = gameMap.toImmutableMap(),
-                        onDayCellClick = { year, month, day ->
-                            // 같은 달
-                            if (curLocalDate.monthValue == month) {
-                                selectedDay = day
-                                onSelectedDayChange(year, month, day)
-                            }
-                            // 다른 달
-                            else {
-                                // 내년 1월 달로 이동
-                                val nextPage = if (curLocalDate.year < year && month == 1) {
-                                    selectedDay = 1
-                                    curPage + 1
-                                }
-                                // 작년 12월 달로 이동
-                                else if (curLocalDate.year > year && month == 12) {
-                                    selectedDay = 1
-                                    curPage - 1
-                                }
-                                // 다음 달로 이동
-                                else if (curLocalDate.monthValue < month) {
-                                    selectedDay = 1
-                                    curPage + 1
-                                }
-                                // 이전 달로 이동
-                                else if (curLocalDate.monthValue > month) {
-                                    selectedDay = 1
-                                    curPage - 1
-                                }
-                                // 움직이지 않음
-                                else {
-                                    DLog.e(TAG, "year=$year, month=$month, day=$day")
-                                    0
-                                }
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(nextPage)
-                                }
-                            }
+                        selectedDate = selectedDate,
+                        gameExistDate = gameExistDate,
+                        onDayCellClick = { year: Int, month: Int, day: Int ->
+                            selectedDate = LocalDate.of(year, month, day)
                         }
                     )
                 }
@@ -173,56 +142,63 @@ fun HorizontalCalendar(
 }
 
 @Composable
-fun CalendarTitle(
-    modifier: Modifier,
-    year: Int,
-    month: Int,
+private fun CalendarTitle(
+    selectedDate: LocalDate,
+    prevMonthEnable: Boolean,
+    nextMonthEnable: Boolean,
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     BballTendingTheme {
         Box(
             modifier = modifier
                 .fillMaxWidth()
+                .padding(top = 12.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.calendar_month_format, year, month),
+                text = stringResource(
+                    id = R.string.calendar_month_format,
+                    selectedDate.year.toString(),
+                    selectedDate.monthValue.monthToString()
+                ),
                 modifier = Modifier
-                    .wrapContentSize()
+                    .padding(start = 20.dp)
                     .align(Alignment.CenterStart),
                 style = BballTendingTheme.typography.black.copy(fontSize = 18.sp)
             )
 
             Row(
                 modifier = Modifier
-                    .wrapContentSize()
+                    .padding(end = 8.dp)
                     .align(Alignment.CenterEnd)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.icon_left_arrow_active),
-                    contentDescription = "Left Arrow",
-                    modifier = Modifier
-                        .noRippleClickable {
-                            onPrevMonth()
-                        }
-                )
+                IconButton(
+                    onClick = onPrevMonth,
+                    enabled = prevMonthEnable
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_left_arrow_active),
+                        contentDescription = "Left Arrow"
+                    )
+                }
                 Spacer(modifier = Modifier.width(5.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.icon_right_arrow_active),
-                    contentDescription = "Right Arrow",
-                    modifier = Modifier
-                        .noRippleClickable {
-                            onNextMonth()
-                        }
-                )
+                IconButton(
+                    onClick = onNextMonth,
+                    enabled = nextMonthEnable
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_right_arrow_active),
+                        contentDescription = "Right Arrow"
+                    )
+                }
             }
         }
     }
 }
 
-
 @Composable
-fun CalendarHeader(cellWidth: Dp) {
+private fun CalendarHeader(cellWidth: Dp) {
     BballTendingTheme {
         Row(
             modifier = Modifier
@@ -244,11 +220,11 @@ fun CalendarHeader(cellWidth: Dp) {
 }
 
 @Composable
-fun CalendarDay(
+private fun CalendarDay(
     cellWidth: Dp,
     localDate: LocalDate,
-    selectedDay: Int,
-    gameMap: ImmutableMap<Int, List<GameData>>,
+    selectedDate: LocalDate,
+    gameExistDate: ImmutableSet<GameDate>,
     onDayCellClick: (year: Int, month: Int, day: Int) -> Unit
 ) {
     val firstDayOfWeek = localDate.dayOfWeek.value.mod(7)
@@ -275,14 +251,14 @@ fun CalendarDay(
                                 .height(cellWidth),
                             isHover = false,
                             isOtherMonth = true,
-                            isGameRecordExist = false,
-                            onClick = onDayCellClick
+                            isGameRecordExist = false
                         )
                     }
                 }
                 while (day + firstDayOfWeek <= 7) {
-                    val isHover = day == selectedDay
-                    val isGameRecordExist = gameMap[day]?.isNotEmpty() ?: false
+                    val isHover = day == selectedDate.dayOfMonth
+                    val isGameRecordExist =
+                        gameExistDate.contains(GameDate(localDate.year, localDate.monthValue, day))
                     CalendarDayCell(
                         year = localDate.year,
                         month = localDate.monthValue,
@@ -299,12 +275,18 @@ fun CalendarDay(
                 }
             }
 
-            while (day < curMonthSize) {
+            while (day <= curMonthSize) {
                 Row {
                     for (idx in 0 until 7) {
                         val isNextMonth = day > curMonthSize
-                        val isHover = !isNextMonth && day == selectedDay
-                        val isGameRecordExist = !isNextMonth && gameMap[day]?.isNotEmpty() ?: false
+                        val isHover = !isNextMonth && day == selectedDate.dayOfMonth
+                        val isGameRecordExist = !isNextMonth && gameExistDate.contains(
+                            GameDate(
+                                localDate.year,
+                                localDate.monthValue,
+                                day
+                            )
+                        )
 
                         if (isNextMonth) {
                             val nextMonthLocalDate = localDate.plusMonths(1)
@@ -319,8 +301,7 @@ fun CalendarDay(
                                     .height(cellWidth),
                                 isHover = false,
                                 isOtherMonth = true,
-                                isGameRecordExist = false,
-                                onClick = onDayCellClick
+                                isGameRecordExist = false
                             )
                         } else {
                             CalendarDayCell(
@@ -341,5 +322,61 @@ fun CalendarDay(
                 }
             }
         }
+    }
+}
+
+private fun Int.monthToString(): String {
+    return when (this) {
+        in 1 until 10 -> "0$this"
+        in 10 until 13 -> this.toString()
+        else -> ""
+    }
+}
+
+private object CalendarConfig {
+    private const val START_YEAR: Int = 2000
+    val yearRange: IntRange = IntRange(START_YEAR, LocalDate.now().year + 100)
+}
+
+private object DayOfWeek {
+    private val enums: Array<DayOfWeek> = DayOfWeek.values()
+
+    fun getDisplayName(): List<String> {
+        return arrayListOf<String>().apply {
+            enums.forEach { enum ->
+                val str = when (enum) {
+                    DayOfWeek.SUNDAY -> "일"
+                    DayOfWeek.MONDAY -> "월"
+                    DayOfWeek.TUESDAY -> "화"
+                    DayOfWeek.WEDNESDAY -> "수"
+                    DayOfWeek.THURSDAY -> "목"
+                    DayOfWeek.FRIDAY -> "금"
+                    DayOfWeek.SATURDAY -> "토"
+                }
+                add(str)
+            }
+        }
+    }
+
+    enum class DayOfWeek {
+        SUNDAY,
+        MONDAY,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        SATURDAY
+    }
+}
+
+@ComponentPreview
+@Composable
+private fun HorizontalCalendarPreview() {
+    BballTendingTheme {
+        HorizontalCalendar(
+            gameExistDate = setOf<GameDate>().toImmutableSet(),
+            onDateChange = {},
+            currentDate = LocalDate.of(2024, 7, 5)
+        )
     }
 }
