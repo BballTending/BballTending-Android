@@ -52,6 +52,7 @@ import com.bballtending.android.ui.noRippleClickable
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
 import com.bballtending.android.ui.theme.BorderGray
+import com.bballtending.android.ui.theme.TextBlack
 import com.bballtending.android.ui.theme.TextHintGray
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -243,7 +244,7 @@ private fun PlayingNowContent(
         BballTendingTheme.typography.medium.copy(fontSize = 15.sp, color = Color.White)
     val unselectedFontStyle =
         BballTendingTheme.typography.regular.copy(fontSize = 15.sp, color = TextHintGray)
-    val selectedBgColor = BballTendingTheme.colors.primary
+    val selectedBgColor = TextBlack
     val unselectedBgColor = BballTendingTheme.colors.background
 
     BballTendingTheme {
@@ -310,7 +311,7 @@ private fun GameTypeContent(
         BballTendingTheme.typography.medium.copy(fontSize = 15.sp, color = Color.White)
     val unselectedFontStyle =
         BballTendingTheme.typography.regular.copy(fontSize = 15.sp, color = TextHintGray)
-    val selectedBgColor = BballTendingTheme.colors.primary
+    val selectedBgColor = TextBlack
     val unselectedBgColor = BballTendingTheme.colors.background
 
     BballTendingTheme {
