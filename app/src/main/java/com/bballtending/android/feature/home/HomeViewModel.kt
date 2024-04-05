@@ -3,6 +3,7 @@ package com.bballtending.android.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bballtending.android.common.util.DLog
+import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,8 +26,13 @@ class HomeViewModel @Inject constructor(
             val year = curLocalDate.year
             val month = curLocalDate.monthValue
             val gameMap = gameRepository.requestGameDataWithMonth(year, month)
+
             _uiState.update {
-                it.copy(gameMap = gameMap)
+                it.copy(
+                    selectedDateGameList = gameMap[it.selectedDate] ?: listOf(),
+                    gameMap = gameMap,
+                    gameExistDate = gameMap.keys
+                )
             }
         }
     }
@@ -34,14 +40,13 @@ class HomeViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    fun onSelectedDayChange(year: Int, month: Int, day: Int) {
-        DLog.d("${TAG}_onSelectedDayChange", "year=$year, month=$month, day=$day")
+    fun onDateChange(gameDate: GameDate) {
         viewModelScope.launch {
+            DLog.d("${TAG}_onDateChange", "gameDate=$gameDate")
             _uiState.update {
                 it.copy(
-                    selectedYear = year,
-                    selectedMonth = month,
-                    selectedDay = day
+                    selectedDate = gameDate,
+                    selectedDateGameList = it.gameMap[gameDate] ?: listOf()
                 )
             }
         }

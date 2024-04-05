@@ -3,7 +3,7 @@
 
     <string name="company_name">Team 볼텐딩</string>
 
-    <string name="calendar_month_format">%1$d년 %2$d월</string>
+    <string name="calendar_month_format">%1$s년 %2$s월</string>
     <string name="game_title_format">%1$d년 %2$d월 %3$d일 경기</string>
     <string name="quarter_format">%1$dQ</string>
     <string name="playTime_format">%1$d분</string>

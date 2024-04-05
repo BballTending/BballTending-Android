@@ -6,6 +6,7 @@ import com.bballtending.android.data.local.dao.GamePlayerRelationDao
 import com.bballtending.android.data.local.database.AppDatabase
 import com.bballtending.android.data.local.entity.GameEntity
 import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.domain.player.model.PlayerData
 import kotlinx.coroutines.Dispatchers
@@ -19,12 +20,15 @@ class GameRepositoryImpl @Inject constructor(
     private val gameDao: GameDao = appDatabase.gameDao()
     private val gamePlayerRelationDao: GamePlayerRelationDao = appDatabase.gamePlayerRelationDao()
 
-    override suspend fun requestGameDataWithMonth(year: Int, month: Int): Map<Int, List<GameData>> {
+    override suspend fun requestGameDataWithMonth(
+        year: Int,
+        month: Int
+    ): Map<GameDate, List<GameData>> {
         return withContext(Dispatchers.IO) {
             val gameEntityList: List<GameEntity> =
                 gameDao.findGameWithYearAndMonth(year, month)
 
-            val ret = hashMapOf<Int, ArrayList<GameData>>()
+            val ret = hashMapOf<GameDate, ArrayList<GameData>>()
             gameEntityList.forEach { gameEntity ->
                 val relation = gamePlayerRelationDao.findRelationWithGameId(gameEntity.gameId)
                 val homeTeamPlayer = arrayListOf<PlayerData>()
@@ -71,7 +75,7 @@ class GameRepositoryImpl @Inject constructor(
                     gameEntity.awayTeamScore4.let { if (it > 0) it else 0 }
                 )
 
-                val day = gameEntity.day
+                val gameDate = GameDate(gameEntity.year, gameEntity.month, gameEntity.day)
                 val gameData = GameData(
                     gameId = gameEntity.gameId,
                     year = gameEntity.year,
@@ -92,15 +96,17 @@ class GameRepositoryImpl @Inject constructor(
                     homeTeamPlayer = homeTeamPlayer,
                     awayTeamPlayer = awayTeamPlayer
                 )
-                if (ret.containsKey(day)) {
-                    ret[day]?.add(gameData)
+                if (ret.containsKey(gameDate)) {
+                    ret[gameDate]?.add(gameData)
                 } else {
-                    ret[day] = arrayListOf(gameData)
+                    ret[gameDate] = arrayListOf(gameData)
                 }
+
             }
 
             val testData = TestModule.createTestData()
-            ret[testData.day] = arrayListOf(testData)
+            val testGameDate = GameDate(testData.year, testData.month, testData.day)
+            ret[testGameDate] = arrayListOf(testData)
 
             ret
         }

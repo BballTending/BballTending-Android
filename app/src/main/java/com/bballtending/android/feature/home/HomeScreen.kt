@@ -53,6 +53,7 @@ import androidx.navigation.compose.composable
 import com.bballtending.android.R
 import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.feature.dialog.GameTypeDialog
 import com.bballtending.android.feature.home.component.CircleIndicator
@@ -67,8 +68,9 @@ import com.bballtending.android.ui.theme.BorderGray
 import com.bballtending.android.ui.theme.TextBlack
 import com.bballtending.android.ui.theme.TextHintGray
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableSet
 
 const val HOME_SCREEN_ROUTE: String = "home"
 
@@ -90,11 +92,10 @@ private fun HomeScreen(
     val uiState: HomeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     HomeScreen(
-        selectedYear = uiState.selectedYear,
-        selectedMonth = uiState.selectedMonth,
-        selectedDay = uiState.selectedDay,
-        gameMap = uiState.gameMap,
-        onSelectedDayChange = homeViewModel::onSelectedDayChange,
+        selectedDate = uiState.selectedDate,
+        selectedDateGameList = uiState.selectedDateGameList.toImmutableList(),
+        gameExistDate = uiState.gameExistDate.toImmutableSet(),
+        onDateChange = homeViewModel::onDateChange,
         onGameTypeSelect = onGameTypeSelect
     )
 }
@@ -102,14 +103,12 @@ private fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(
-    selectedYear: Int,
-    selectedMonth: Int,
-    selectedDay: Int,
-    gameMap: Map<Int, List<GameData>>,
-    onSelectedDayChange: (year: Int, month: Int, day: Int) -> Unit,
-    onGameTypeSelect: (gameType: GameType) -> Unit
+    selectedDate: GameDate,
+    selectedDateGameList: ImmutableList<GameData>,
+    gameExistDate: ImmutableSet<GameDate>,
+    onDateChange: (GameDate) -> Unit,
+    onGameTypeSelect: (GameType) -> Unit
 ) {
-    val gameData = gameMap[selectedDay]
     var gameTypeDialogVisible by remember { mutableStateOf(false) }
     val scaffoldState = rememberBottomSheetScaffoldState().apply {
         bottomSheetState
@@ -136,17 +135,13 @@ private fun HomeScreen(
                 sheetContent = {
                     if (isExpanded) {
                         HomeScreenExpandedSheetContent(
-                            selectedYear = selectedYear,
-                            selectedMonth = selectedMonth,
-                            selectedDay = selectedDay,
-                            gameData = gameData?.toImmutableList()
+                            selectedDate = selectedDate,
+                            gameData = selectedDateGameList
                         )
                     } else {
                         HomeScreenPartiallyExpandedSheetContent(
-                            selectedYear = selectedYear,
-                            selectedMonth = selectedMonth,
-                            selectedDay = selectedDay,
-                            gameData = gameData?.toImmutableList()
+                            gameDate = selectedDate,
+                            gameData = selectedDateGameList
                         )
                     }
                 },
@@ -157,7 +152,7 @@ private fun HomeScreen(
                     (screenHeightDp - with(LocalDensity.current) { peekInitY / density }).dp
                 },
                 sheetDragHandle = null,
-                sheetSwipeEnabled = gameData?.isNotEmpty() ?: false,
+                sheetSwipeEnabled = selectedDateGameList.isNotEmpty(),
                 sheetContainerColor = BballTendingTheme.colors.background,
                 sheetShadowElevation = 5.dp
             ) {
@@ -168,8 +163,8 @@ private fun HomeScreen(
                 ) {
                     Column {
                         HorizontalCalendar(
-                            gameMap = gameMap.toImmutableMap(),
-                            onSelectedDayChange = onSelectedDayChange
+                            gameExistDate = gameExistDate,
+                            onDateChange = onDateChange
                         )
 
                         var initFlag = 0
@@ -223,7 +218,7 @@ private fun HomeScreen(
                 }
             }
 
-            if (gameData == null) {
+            if (selectedDateGameList.isEmpty()) {
                 Button(
                     onClick = {
                         gameTypeDialogVisible = true
@@ -318,10 +313,8 @@ private fun HomeScreen(
 
 @Composable
 private fun HomeScreenPartiallyExpandedSheetContent(
-    selectedYear: Int,
-    selectedMonth: Int,
-    selectedDay: Int,
-    gameData: ImmutableList<GameData>?
+    gameDate: GameDate,
+    gameData: ImmutableList<GameData>
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(
@@ -335,14 +328,14 @@ private fun HomeScreenPartiallyExpandedSheetContent(
         Spacer(modifier = Modifier.height(25.dp))
 
         ScoreBoard(
-            selectedYear = selectedYear,
-            selectedMonth = selectedMonth,
-            selectedDay = selectedDay,
-            gameData = gameData?.firstOrNull()
+            year = gameDate.year,
+            month = gameDate.month,
+            day = gameDate.day,
+            gameData = gameData.firstOrNull()
         )
 
         // 게임 기록이 없는 경우
-        if (gameData == null) {
+        if (gameData.isEmpty()) {
             NoGameInfo(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
         // 게임 기록이 있는 경우
@@ -354,15 +347,13 @@ private fun HomeScreenPartiallyExpandedSheetContent(
 
 @Composable
 private fun HomeScreenExpandedSheetContent(
-    selectedYear: Int,
-    selectedMonth: Int,
-    selectedDay: Int,
-    gameData: ImmutableList<GameData>?
+    selectedDate: GameDate,
+    gameData: ImmutableList<GameData>
 ) {
     var curGameIdx by remember { mutableIntStateOf(0) }
 
     // 게임 기록이 없는 경우
-    if (gameData == null) {
+    if (gameData.isEmpty()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(
                 modifier = Modifier
@@ -374,9 +365,9 @@ private fun HomeScreenExpandedSheetContent(
             )
             Spacer(modifier = Modifier.height(25.dp))
             ScoreBoard(
-                selectedYear = selectedYear,
-                selectedMonth = selectedMonth,
-                selectedDay = selectedDay,
+                year = selectedDate.year,
+                month = selectedDate.month,
+                day = selectedDate.day,
                 gameData = null
             )
             NoGameInfo(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -407,9 +398,9 @@ private fun HomeScreenExpandedSheetContent(
                     )
                     Spacer(modifier = Modifier.height(25.dp))
                     ScoreBoard(
-                        selectedYear = selectedYear,
-                        selectedMonth = selectedMonth,
-                        selectedDay = selectedDay,
+                        year = selectedDate.year,
+                        month = selectedDate.month,
+                        day = selectedDate.day,
                         gameData = gameData[curGameIdx],
                         isOnPrimary = true,
                         isDetail = true
