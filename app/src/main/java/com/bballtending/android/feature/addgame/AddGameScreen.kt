@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,9 +28,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +54,7 @@ import com.bballtending.android.feature.addgame.component.AddPlayerCard
 import com.bballtending.android.feature.addgame.component.PlayerInfoCard
 import com.bballtending.android.feature.addgame.model.AddGameUiState
 import com.bballtending.android.feature.border
+import com.bballtending.android.feature.dialog.PlayerInfoDialog
 import com.bballtending.android.ui.noRippleClickable
 import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
@@ -91,6 +98,7 @@ private fun AddGameScreen(
 //        homeTeamPlayer = uiState.homeTeamPlayer.toImmutableList(),
         homeTeamPlayer = TestModule.createTestData().homeTeamPlayer.toImmutableList(),
         awayTeamPlayer = uiState.awayTeamPlayer.toImmutableList(),
+        startGameEnable = uiState.startGameEnable,
         onPlayingNowSelect = addGameViewModel::onPlayingNowSelect,
         onGameTypeSelect = addGameViewModel::onGameTypeSelect,
         onQuarterChange = addGameViewModel::onQuarterChange,
@@ -118,6 +126,7 @@ private fun AddGameScreen(
     breakTimePlusEnable: Boolean,
     homeTeamPlayer: ImmutableList<PlayerData>,
     awayTeamPlayer: ImmutableList<PlayerData>,
+    startGameEnable: Boolean,
     onPlayingNowSelect: (Boolean) -> Unit,
     onGameTypeSelect: (GameType) -> Unit,
     onQuarterChange: (Int) -> Unit,
@@ -129,6 +138,7 @@ private fun AddGameScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val scrollState = rememberScrollState()
+    var playerInfoDialogVisible by remember { mutableStateOf(false) }
 
     BballTendingTheme {
         Scaffold(
@@ -212,8 +222,12 @@ private fun AddGameScreen(
                 PlayerInfoContent(
                     isHomeTeam = true,
                     playerList = homeTeamPlayer,
-                    onPlayerAdded = onPlayerAdded,
-                    onPlayerRemoved = onPlayerRemoved,
+                    onAddPlayerCardClick = {
+                        playerInfoDialogVisible = true
+                    },
+                    onPlayerInfoCardClick = {
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
@@ -222,14 +236,52 @@ private fun AddGameScreen(
                 PlayerInfoContent(
                     isHomeTeam = false,
                     playerList = awayTeamPlayer,
-                    onPlayerAdded = onPlayerAdded,
-                    onPlayerRemoved = onPlayerRemoved,
+                    onAddPlayerCardClick = {
+                        playerInfoDialogVisible = true
+                    },
+                    onPlayerInfoCardClick = {
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
                         .background(color = BballTendingTheme.colors.background)
                 )
+                Button(
+                    onClick = {
+
+                    },
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .fillMaxWidth(),
+                    enabled = startGameEnable,
+                    shape = RectangleShape,
+                    colors = ButtonColors(
+                        containerColor = BballTendingTheme.colors.primary,
+                        contentColor = BballTendingTheme.colors.primary,
+                        disabledContainerColor = BorderGray,
+                        disabledContentColor = BorderGray
+                    ),
+                    contentPadding = PaddingValues(top = 18.dp, bottom = 17.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.msg_play_game),
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        style = BballTendingTheme.typography.bold.copy(
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    )
+                }
             }
+        }
+
+        if (playerInfoDialogVisible) {
+            PlayerInfoDialog(
+                recentPlayerList = listOf<PlayerData>().toImmutableList(),
+                onAddGamePlayer = {},
+                onDismiss = {}
+            )
         }
     }
 }
@@ -545,8 +597,8 @@ private fun GameTimeContent(
 private fun PlayerInfoContent(
     isHomeTeam: Boolean,
     playerList: ImmutableList<PlayerData>,
-    onPlayerAdded: (Boolean, String, String, Position) -> Unit,
-    onPlayerRemoved: (Boolean, String, String, Position) -> Unit,
+    onAddPlayerCardClick: () -> Unit,
+    onPlayerInfoCardClick: (PlayerData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val teamName = if (isHomeTeam) "홈 팀" else "어웨이 팀"
@@ -569,9 +621,7 @@ private fun PlayerInfoContent(
             ) {
                 item {
                     AddPlayerCard(
-                        onAddPlayerCardClick = {
-
-                        }
+                        onAddPlayerCardClick = onAddPlayerCardClick
                     )
                 }
 
@@ -580,9 +630,7 @@ private fun PlayerInfoContent(
                         PlayerInfoCard(
                             isHomeTeam = isHomeTeam,
                             playerData = playerData,
-                            onPlayerInfoCardClick = {
-
-                            }
+                            onPlayerInfoCardClick = onPlayerInfoCardClick
                         )
                     }
                 }
@@ -604,8 +652,31 @@ private fun PlayerInfoContent(
 @DevicePreview
 @Composable
 private fun AddGameScreenPreview() {
+    val testData = TestModule.createTestData()
+
     BballTendingTheme {
         AddGameScreen(
+            playingNow = true,
+            gameType = GameType.FULL_COURT,
+            quarter = 4,
+            quarterMinusEnable = true,
+            quarterPlusEnable = false,
+            playTime = 10,
+            playTimeMinusEnable = true,
+            playTimePlusEnable = false,
+            breakTime = 5,
+            breakTimeMinusEnable = true,
+            breakTimePlusEnable = true,
+            homeTeamPlayer = testData.homeTeamPlayer.toImmutableList(),
+            awayTeamPlayer = testData.awayTeamPlayer.toImmutableList(),
+            startGameEnable = false,
+            onPlayingNowSelect = {},
+            onGameTypeSelect = {},
+            onQuarterChange = {},
+            onPlayTimeChange = {},
+            onBreakTimeChange = {},
+            onPlayerAdded = { _, _, _, _ -> },
+            onPlayerRemoved = { _, _, _, _ -> },
             onClose = {}
         )
     }

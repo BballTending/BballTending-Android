@@ -17,4 +17,6 @@ data class AddGameUiState(
     val breakTimePlusEnable: Boolean = true,
     val homeTeamPlayer: List<PlayerData> = listOf(),
     val awayTeamPlayer: List<PlayerData> = listOf()
-)
+) {
+    val startGameEnable: Boolean get() = playingNow != null && gameType != null && homeTeamPlayer.isNotEmpty() && awayTeamPlayer.isNotEmpty()
+}
