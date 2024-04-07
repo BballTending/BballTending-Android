@@ -245,7 +245,7 @@ private fun HomeScreen(
                     )
                 ) {
                     Text(
-                        text = stringResource(id = R.string.home_play_game),
+                        text = stringResource(id = R.string.msg_play_game),
                         style = BballTendingTheme.typography.medium.copy(
                             color = Color.White,
                             fontSize = 14.sp
@@ -286,7 +286,7 @@ private fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = stringResource(id = R.string.home_add_game),
+                        text = stringResource(id = R.string.msg_add_game),
                         modifier = Modifier.align(Alignment.CenterVertically),
                         style = BballTendingTheme.typography.medium.copy(
                             color = BballTendingTheme.colors.primary,
