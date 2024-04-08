@@ -11,9 +11,12 @@
 
     <string name="msg_play_game">경기 시작하기</string>
     <string name="msg_add_game">경기 추가하기</string>
+    <string name="msg_add_player">선수 등록하기</string>
+    <string name="msg_modify_player">수정 완료하기</string>
 
     <string name="errorMsg_textField_playerName">선수명은 한글과 영어만 입력할 수 있어요.</string>
     <string name="errorMsg_textField_playerNumber">등번호는 숫자만 입력할 수 있어요.</string>
+    <string name="errorMsg_playerInfo_duplicate">같은 팀 내에서 등번호는 중복될 수 없어요.</string>
 
     <string name="home_chart_btn">전체 성적 보기</string>
     <string name="home_no_game_record">아직 등록된 경기가 없어요.</string>
@@ -50,16 +53,23 @@
     <string name="addGame_gameTimeContent_quarter">쿼 터</string>
     <string name="addGame_gameTimeContent_playTime">경기 시간</string>
     <string name="addGame_gameTimeContent_breakTime">쉬는 시간</string>
+    <string name="addGame_gameTimeContent_info">쿼터 수, 경기 시간, 쉬는 시간을 변경할 수 있어요.</string>
     <string name="addGame_playerInfoContent_title">%1$s 선수 정보를 입력해 주세요.</string>
     <string name="addGame_playerInfoContent_totalPlayer">총 인원: %1$d명</string>
 
-    <string name="addPlayerInfoDialog_title">선수 정보 입력하기</string>
-    <string name="modifyPlayerInfoDialog_title">선수 정보 수정하기</string>
+    <string name="addPlayerInfoDialog_title">%1$s 선수 정보 입력하기</string>
+    <string name="modifyPlayerInfoDialog_title">%1$s 선수 정보 수정하기</string>
     <string name="playerInfoDialog_recentPlayer">최근 함께 경기한 선수</string>
     <string name="playerInfoDialog_name">선수명</string>
     <string name="playerInfoDialog_name_placeholder">선수명을 입력해 주세요.</string>
     <string name="playerInfoDialog_number">등번호</string>
     <string name="playerInfoDialog_number_placeholder">등번호를 입력해 주세요.</string>
     <string name="playerInfoDialog_position">포지션</string>
+
+    <string name="positionDesc_PG">팀의 공격을 이끄는 주축이자 전술적 조정자</string>
+    <string name="positionDesc_SG">주요 슈팅 옵션 및 공을 운반하는 역할</string>
+    <string name="positionDesc_SF">공격과 수비 모두에서 다재다능한 역할</string>
+    <string name="positionDesc_PF">피지컬 기반의 공격과 강한 리바운드 개입</string>
+    <string name="positionDesc_C">팀의 방어력을 강화하는 핵심 역할</string>
 
 </resources>
