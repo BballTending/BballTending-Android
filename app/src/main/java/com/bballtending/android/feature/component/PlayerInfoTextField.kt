@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
@@ -83,19 +84,21 @@ fun PlayerInfoTextField(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 50.dp)
                         .border(
                             width = 1.dp,
                             color = if (errorMsgVisible) CancelRed else BorderGray,
                             shape = RectangleShape
                         )
-                        .padding(start = 15.dp, top = 15.dp, bottom = 15.dp),
+                        .padding(start = 15.dp, end = 12.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     innerTextField()
                     if (text.isEmpty()) {
                         Text(
                             text = placeholder,
-                            modifier = Modifier.align(Alignment.CenterStart),
+                            modifier = Modifier
+                                .align(Alignment.CenterStart),
                             style = BballTendingTheme.typography.regular.copy(
                                 fontSize = 15.sp,
                                 color = TextHintGray
@@ -109,7 +112,6 @@ fun PlayerInfoTextField(
                             modifier = Modifier
                                 .noRippleClickable { text = "" }
                                 .align(Alignment.CenterEnd)
-                                .padding(end = 12.dp)
                         )
                     }
                 }
@@ -151,11 +153,11 @@ private fun PlayerInfoTextFieldPreview() {
 
 private fun getInputRegex(inputType: InputType): Regex = when (inputType) {
     InputType.NAME -> {
-        Regex("[ㄱ-ㅎ가-힣a-zA-Z]+")
+        Regex("([ㄱ-ㅎ가-힣a-zA-Z. ]*)+")
     }
 
     InputType.NUMBER -> {
-        Regex("[0-9]+")
+        Regex("([0-9]*)+")
     }
 }
 
