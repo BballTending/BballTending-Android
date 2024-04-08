@@ -1,5 +1,6 @@
 package com.bballtending.android.feature.addgame.component
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -70,6 +71,68 @@ fun PlayerInfoCard(
                     .align(Alignment.BottomEnd)
                     .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
                 style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp)
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerInfoCard(
+    isHomeTeam: Boolean,
+    playerData: PlayerData,
+    onPlayerInfoCardClick: (PlayerData) -> Unit,
+    @DrawableRes topEndIconResId: Int,
+    onTopEndIconClick: (PlayerData) -> Unit = {}
+) {
+    val bgIconResId = if (isHomeTeam) R.drawable.icon_home_team else R.drawable.icon_away_team
+    BballTendingTheme {
+        Box(
+            modifier = Modifier
+                .noRippleClickable {
+                    onPlayerInfoCardClick(playerData)
+                }
+                .size(100.dp)
+                .background(color = BballTendingTheme.colors.background)
+                .border(width = 1.dp, color = TextBlack, shape = RoundedCornerShape(16.dp))
+        ) {
+            Image(
+                painter = painterResource(id = bgIconResId), contentDescription = "BG Icon",
+                modifier = Modifier
+                    .padding(end = 5.dp, bottom = 5.dp)
+                    .size(60.dp)
+                    .align(Alignment.BottomEnd),
+                contentScale = ContentScale.Fit,
+                alpha = 0.3f
+            )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 12.dp, top = 15.dp, end = 12.dp)
+            ) {
+                Text(
+                    text = playerData.number,
+                    style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp)
+                )
+                Text(
+                    text = playerData.name,
+                    style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp)
+                )
+            }
+            Text(
+                text = playerData.position.name,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+                style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp)
+            )
+            Image(
+                painter = painterResource(id = topEndIconResId),
+                contentDescription = "Icon",
+                modifier = Modifier
+                    .noRippleClickable { onTopEndIconClick(playerData) }
+                    .align(Alignment.TopEnd)
+                    .padding(top = 10.dp, end = 10.dp)
+                    .size(10.dp)
             )
         }
     }
