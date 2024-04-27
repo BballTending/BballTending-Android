@@ -39,7 +39,7 @@ class GameRepositoryImpl @Inject constructor(
                         playerId = playerEntity.playerId,
                         name = playerEntity.name,
                         number = playerEntity.number,
-                        position = playerEntity.position,
+                        position = relationEntity.position,
                         score = relationEntity.score,
                         fieldGoalAttempt = relationEntity.twoPointAttempt + relationEntity.threePointAttempt,
                         fieldGoalSuccess = relationEntity.twoPointSuccess + relationEntity.threePointSuccess,

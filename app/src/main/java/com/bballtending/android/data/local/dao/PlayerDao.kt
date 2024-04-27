@@ -9,7 +9,7 @@ import com.bballtending.android.data.local.entity.PlayerEntity
 @Dao
 interface PlayerDao {
     @Insert
-    suspend fun insert(playerEntity: PlayerEntity)
+    suspend fun insert(playerEntity: PlayerEntity): Long
 
     @Delete
     suspend fun delete(playerEntity: PlayerEntity)
@@ -23,4 +23,10 @@ interface PlayerDao {
                 "WHERE game_player_relation_table.game_id = :gameId"
     )
     suspend fun findPlayerWithGameId(gameId: Long): List<PlayerEntity>
+
+    @Query("SELECT * FROM player_table WHERE name = :name AND number = :number")
+    suspend fun findPlayer(name: String, number: String): PlayerEntity?
+
+    @Query("SELECT * FROM player_table WHERE player_id = :playerId")
+    suspend fun findPlayerWithPlayerId(playerId: Long): PlayerEntity
 }

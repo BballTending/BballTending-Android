@@ -16,10 +16,11 @@ import com.bballtending.android.data.local.entity.PlayerEntity
 
 @Database(
     entities = [GameEntity::class, PlayerEntity::class, GamePlayerRelationEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2, spec = AppDatabase.AutoMigrationSpecFrom1to2::class)
+        AutoMigration(from = 1, to = 2, spec = AppDatabase.AutoMigrationSpecFrom1to2::class),
+        AutoMigration(from = 2, to = 3, spec = AppDatabase.AutoMigrationSpecFrom2to3::class)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -43,6 +44,16 @@ abstract class AppDatabase : RoomDatabase() {
     @DeleteColumn(tableName = "game_table", columnName = "home_team_score")
     @DeleteColumn(tableName = "game_table", columnName = "away_team_score")
     class AutoMigrationSpecFrom1to2 : AutoMigrationSpec
+
+    /**
+     * from 2 to 3 변경사항
+     *
+     * player_table에 있던 position 정보가 game_player_relation_table로 이동함
+     *
+     * 경기에 따라 선수의 포지션이 변경될 수 있기 때문에 선수 정보가 아닌 경기와 선수의 관계 테이블로 이동함
+     */
+    @DeleteColumn(tableName = "player_table", columnName = "position")
+    class AutoMigrationSpecFrom2to3 : AutoMigrationSpec
 
     companion object {
         const val DB_NAME: String = "BballTending_Database"

@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.bballtending.android.domain.player.model.Position
 
 /**
  * 게임과 플레이어 사이의 관계를 의미하는 테이블 Entity
@@ -42,6 +43,11 @@ data class GamePlayerRelationEntity(
      */
     @ColumnInfo(name = "player_id")
     val playerId: Long,
+    /**
+     * 선수의 포지션
+     */
+    @ColumnInfo(name = "position", defaultValue = "")
+    val position: Position,
     /**
      * 홈 팀 선수 여부
      */
