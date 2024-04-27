@@ -3,7 +3,7 @@ package com.bballtending.android.data.repository
 import com.bballtending.android.domain.login.model.RequestLogin
 import com.bballtending.android.domain.login.model.ResponseLogin
 import com.bballtending.android.domain.login.repository.LoginRepository
-import com.bballtending.android.domain.network.NetworkResult
+import com.bballtending.android.domain.NetworkResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext

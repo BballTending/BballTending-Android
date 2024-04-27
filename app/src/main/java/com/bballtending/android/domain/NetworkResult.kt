@@ -1,4 +1,4 @@
-package com.bballtending.android.domain.network
+package com.bballtending.android.domain
 
 sealed class NetworkResult<out R> {
     /**
@@ -16,3 +16,5 @@ sealed class NetworkResult<out R> {
      */
     data class Error(val exception: Exception) : NetworkResult<Nothing>()
 }
+
+val NetworkResult<*>.isSucceeded: Boolean get() = this is NetworkResult.Success
