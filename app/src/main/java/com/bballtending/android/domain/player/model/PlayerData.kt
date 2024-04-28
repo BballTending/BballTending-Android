@@ -17,55 +17,55 @@ data class PlayerData(
     /**
      * 본 게임 득점 기록
      */
-    val score: Int,
+    val score: Int = 0,
     /**
      * 야투 시도 횟수
      */
-    val fieldGoalAttempt: Int,
+    val fieldGoalAttempt: Int = 0,
     /**
      * 야투 성공 횟수
      */
-    val fieldGoalSuccess: Int,
+    val fieldGoalSuccess: Int = 0,
     /**
      * 2점 슛 시도 횟수
      */
-    val twoPointAttempt: Int,
+    val twoPointAttempt: Int = 0,
     /**
      * 2점 슛 성공 횟수
      */
-    val twoPointSuccess: Int,
+    val twoPointSuccess: Int = 0,
     /**
      * 3점 슛 시도 횟수
      */
-    val threePointAttempt: Int,
+    val threePointAttempt: Int = 0,
     /**
      * 3점 슛 성공 횟수
      */
-    val threePointSuccess: Int,
+    val threePointSuccess: Int = 0,
     /**
      * 리바운드
      */
-    val rebound: Int,
+    val rebound: Int = 0,
     /**
      * 어시스트
      */
-    val assist: Int,
+    val assist: Int = 0,
     /**
      * 스틸
      */
-    val steal: Int,
+    val steal: Int = 0,
     /**
      * 블록
      */
-    val block: Int,
+    val block: Int = 0,
     /**
      * 턴오버
      */
-    val turnOver: Int,
+    val turnOver: Int = 0,
     /**
      * 파울
      */
-    val foul: Int
+    val foul: Int = 0
 ) {
     val fieldGoalRatio: String
         get() = "$fieldGoalSuccess/$fieldGoalAttempt"

@@ -2,8 +2,11 @@ package com.bballtending.android.feature.addgame
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bballtending.android.domain.NetworkResult
 import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.domain.game.repository.ValidateGameDataRepository
+import com.bballtending.android.domain.game.usecase.AddPlayerUseCase
+import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.player.model.Position
 import com.bballtending.android.feature.addgame.model.AddGameUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddGameViewModel @Inject constructor(
-    private val validateGameDataRepository: ValidateGameDataRepository
+    private val validateGameDataRepository: ValidateGameDataRepository,
+    private val addPlayerUseCase: AddPlayerUseCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<AddGameUiState> = MutableStateFlow(AddGameUiState())
@@ -115,17 +119,60 @@ class AddGameViewModel @Inject constructor(
         }
     }
 
-    fun onPlayerAdded(isHomeTeamPlayer: Boolean, name: String, number: String, position: Position) {
-
-    }
-
-    fun onPlayerRemoved(
+    fun onPlayerAdded(
         isHomeTeamPlayer: Boolean,
         name: String,
         number: String,
         position: Position
-    ) {
+    ): Boolean {
+        val teamPlayerList =
+            if (isHomeTeamPlayer) uiState.value.homeTeamPlayer else uiState.value.awayTeamPlayer
+        val sameNumberPlayer = teamPlayerList.find { it.number == number }
 
+        // 팀 내에 등번호가 같은 선수가 없는 경우
+        return if (sameNumberPlayer == null) {
+            viewModelScope.launch {
+                val addedPlayerData = addPlayerUseCase(name, number, position)
+                if (addedPlayerData is NetworkResult.Success) {
+                    val newList = teamPlayerList.toMutableList().apply {
+                        add(addedPlayerData.data)
+                    }
+                    _uiState.update {
+                        if (isHomeTeamPlayer)
+                            it.copy(homeTeamPlayer = newList)
+                        else
+                            it.copy(awayTeamPlayer = newList)
+                    }
+                } else {
+                    // TODO: 예외 처리 필요?
+                }
+            }
+            true
+        }
+        // 팀 내에 등번호가 같은 선수가 있는 경우
+        else {
+            false
+        }
+    }
+
+    fun onPlayerModified(isHomeTeamPlayer: Boolean, playerData: PlayerData): Boolean {
+        return false
+    }
+
+    fun onPlayerRemoved(isHomeTeamPlayer: Boolean, playerData: PlayerData) {
+        viewModelScope.launch {
+            val teamPlayerList =
+                if (isHomeTeamPlayer) uiState.value.homeTeamPlayer else uiState.value.awayTeamPlayer
+            val newList = teamPlayerList.toMutableList().apply {
+                remove(playerData)
+            }
+            _uiState.update {
+                if (isHomeTeamPlayer)
+                    it.copy(homeTeamPlayer = newList)
+                else
+                    it.copy(awayTeamPlayer = newList)
+            }
+        }
     }
 
     companion object {

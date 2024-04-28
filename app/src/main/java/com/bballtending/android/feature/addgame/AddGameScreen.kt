@@ -1,5 +1,6 @@
 package com.bballtending.android.feature.addgame
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -7,9 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -95,8 +98,7 @@ private fun AddGameScreen(
         breakTime = uiState.breakTime,
         breakTimeMinusEnable = uiState.breakTimeMinusEnable,
         breakTimePlusEnable = uiState.breakTimePlusEnable,
-//        homeTeamPlayer = uiState.homeTeamPlayer.toImmutableList(),
-        homeTeamPlayer = TestModule.createTestData().homeTeamPlayer.toImmutableList(),
+        homeTeamPlayer = uiState.homeTeamPlayer.toImmutableList(),
         awayTeamPlayer = uiState.awayTeamPlayer.toImmutableList(),
         startGameEnable = uiState.startGameEnable,
         onPlayingNowSelect = addGameViewModel::onPlayingNowSelect,
@@ -105,6 +107,7 @@ private fun AddGameScreen(
         onPlayTimeChange = addGameViewModel::onPlayTimeChange,
         onBreakTimeChange = addGameViewModel::onBreakTimeChange,
         onPlayerAdded = addGameViewModel::onPlayerAdded,
+        onPlayerModified = addGameViewModel::onPlayerModified,
         onPlayerRemoved = addGameViewModel::onPlayerRemoved,
         onClose = onClose
     )
@@ -132,13 +135,17 @@ private fun AddGameScreen(
     onQuarterChange: (Int) -> Unit,
     onPlayTimeChange: (Int) -> Unit,
     onBreakTimeChange: (Int) -> Unit,
-    onPlayerAdded: (Boolean, String, String, Position) -> Unit,
-    onPlayerRemoved: (Boolean, String, String, Position) -> Unit,
+    onPlayerAdded: (Boolean, String, String, Position) -> Boolean,
+    onPlayerModified: (Boolean, PlayerData) -> Boolean,
+    onPlayerRemoved: (Boolean, PlayerData) -> Unit,
     onClose: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val scrollState = rememberScrollState()
-    var playerInfoDialogVisible by remember { mutableStateOf(false) }
+
+    var addPlayerDialogVisible by remember { mutableStateOf(false) }
+    var modifyPlayerData by remember { mutableStateOf<PlayerData?>(null) }
+    var isHomeTeamPlayer by remember { mutableStateOf(false) }
 
     BballTendingTheme {
         Scaffold(
@@ -163,13 +170,7 @@ private fun AddGameScreen(
                         IconButton(onClick = { onClose() }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.icon_close),
-                                contentDescription = "Close",
-                                modifier = Modifier.padding(
-                                    start = 15.dp,
-                                    top = 13.dp,
-                                    end = 15.dp,
-                                    bottom = 13.dp
-                                )
+                                contentDescription = "Close"
                             )
                         }
                     },
@@ -223,11 +224,14 @@ private fun AddGameScreen(
                     isHomeTeam = true,
                     playerList = homeTeamPlayer,
                     onAddPlayerCardClick = {
-                        playerInfoDialogVisible = true
+                        isHomeTeamPlayer = true
+                        addPlayerDialogVisible = true
                     },
                     onPlayerInfoCardClick = {
-
+                        isHomeTeamPlayer = true
+                        modifyPlayerData = it
                     },
+                    onPlayerRemoved = onPlayerRemoved,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
@@ -237,11 +241,14 @@ private fun AddGameScreen(
                     isHomeTeam = false,
                     playerList = awayTeamPlayer,
                     onAddPlayerCardClick = {
-                        playerInfoDialogVisible = true
+                        isHomeTeamPlayer = false
+                        addPlayerDialogVisible = true
                     },
                     onPlayerInfoCardClick = {
-
+                        isHomeTeamPlayer = false
+                        modifyPlayerData = it
                     },
+                    onPlayerRemoved = onPlayerRemoved,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
@@ -276,12 +283,27 @@ private fun AddGameScreen(
             }
         }
 
-        if (playerInfoDialogVisible) {
+        if (addPlayerDialogVisible) {
             PlayerInfoDialog(
+                isHomeTeamPlayer = isHomeTeamPlayer,
                 recentPlayerList = listOf<PlayerData>().toImmutableList(),
-                onAddGamePlayer = {},
-                onDismiss = {}
+                onAddGamePlayer = onPlayerAdded,
+                onDismiss = {
+                    addPlayerDialogVisible = false
+                }
             )
+        } else if (modifyPlayerData != null) {
+            modifyPlayerData?.let {
+                PlayerInfoDialog(
+                    isHomeTeamPlayer = isHomeTeamPlayer,
+                    recentPlayerList = listOf<PlayerData>().toImmutableList(),
+                    originPlayerData = it,
+                    onModifyGamePlayer = onPlayerModified,
+                    onDismiss = {
+                        modifyPlayerData = null
+                    }
+                )
+            }
         }
     }
 }
@@ -589,6 +611,22 @@ private fun GameTimeContent(
                     }
                 }
             }
+            Row(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = 1.dp, end = 15.dp, bottom = 24.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.icon_info),
+                    contentDescription = "Info",
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = stringResource(id = R.string.addGame_gameTimeContent_info),
+                    style = BballTendingTheme.typography.regular.copy(fontSize = 12.sp)
+                )
+            }
         }
     }
 }
@@ -599,6 +637,7 @@ private fun PlayerInfoContent(
     playerList: ImmutableList<PlayerData>,
     onAddPlayerCardClick: () -> Unit,
     onPlayerInfoCardClick: (PlayerData) -> Unit,
+    onPlayerRemoved: (Boolean, PlayerData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val teamName = if (isHomeTeam) "홈 팀" else "어웨이 팀"
@@ -630,7 +669,11 @@ private fun PlayerInfoContent(
                         PlayerInfoCard(
                             isHomeTeam = isHomeTeam,
                             playerData = playerData,
-                            onPlayerInfoCardClick = onPlayerInfoCardClick
+                            onPlayerInfoCardClick = onPlayerInfoCardClick,
+                            topEndIconResId = R.drawable.icon_close_10dp,
+                            onTopEndIconClick = {
+                                onPlayerRemoved(isHomeTeam, it)
+                            }
                         )
                     }
                 }
@@ -675,8 +718,9 @@ private fun AddGameScreenPreview() {
             onQuarterChange = {},
             onPlayTimeChange = {},
             onBreakTimeChange = {},
-            onPlayerAdded = { _, _, _, _ -> },
-            onPlayerRemoved = { _, _, _, _ -> },
+            onPlayerAdded = { _, _, _, _ -> true },
+            onPlayerModified = { _, _ -> true },
+            onPlayerRemoved = { _, _ -> },
             onClose = {}
         )
     }
