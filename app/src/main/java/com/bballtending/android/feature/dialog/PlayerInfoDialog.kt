@@ -91,7 +91,7 @@ fun PlayerInfoDialog(
  *
  *  @param recentPlayerList     최근 플레이한 선수 리스트
  *  @param originPlayerData     수정할 선수 데이터
- *  @param onModifyGamePlayer   선수 추가 Callback
+ *  @param onModifyGamePlayer   선수 수정 Callback
  *  @param onDismiss            Dialog Dismiss Callback
  */
 @Composable
