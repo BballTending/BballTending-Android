@@ -55,6 +55,7 @@ import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.model.GameData
 import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.model.GameType
+import com.bballtending.android.domain.game.model.SortType
 import com.bballtending.android.feature.dialog.GameTypeDialog
 import com.bballtending.android.feature.home.component.CircleIndicator
 import com.bballtending.android.feature.home.component.HorizontalCalendar
@@ -75,7 +76,7 @@ import kotlinx.collections.immutable.toImmutableSet
 const val HOME_SCREEN_ROUTE: String = "home"
 
 fun NavGraphBuilder.homeScreen(
-    onGameTypeSelect: (gameType: GameType) -> Unit
+    onGameTypeSelect: (GameType, GameDate) -> Unit
 ) {
     composable(
         route = HOME_SCREEN_ROUTE
@@ -86,7 +87,7 @@ fun NavGraphBuilder.homeScreen(
 
 @Composable
 private fun HomeScreen(
-    onGameTypeSelect: (gameType: GameType) -> Unit,
+    onGameTypeSelect: (GameType, GameDate) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState: HomeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
@@ -95,7 +96,10 @@ private fun HomeScreen(
         selectedDate = uiState.selectedDate,
         selectedDateGameList = uiState.selectedDateGameList.toImmutableList(),
         gameExistDate = uiState.gameExistDate.toImmutableSet(),
+        homeTeamPlayerSortType = uiState.homeTeamPlayerSortType,
+        awayTeamPlayerSortType = uiState.awayTeamPlayerSortType,
         onDateChange = homeViewModel::onDateChange,
+        onSortTypeChange = homeViewModel::onSortTypeChange,
         onGameTypeSelect = onGameTypeSelect
     )
 }
@@ -106,8 +110,11 @@ private fun HomeScreen(
     selectedDate: GameDate,
     selectedDateGameList: ImmutableList<GameData>,
     gameExistDate: ImmutableSet<GameDate>,
+    homeTeamPlayerSortType: SortType,
+    awayTeamPlayerSortType: SortType,
     onDateChange: (GameDate) -> Unit,
-    onGameTypeSelect: (GameType) -> Unit
+    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit,
+    onGameTypeSelect: (GameType, GameDate) -> Unit
 ) {
     var gameTypeDialogVisible by remember { mutableStateOf(false) }
     val scaffoldState = rememberBottomSheetScaffoldState().apply {
@@ -136,12 +143,18 @@ private fun HomeScreen(
                     if (isExpanded) {
                         HomeScreenExpandedSheetContent(
                             selectedDate = selectedDate,
-                            gameData = selectedDateGameList
+                            gameData = selectedDateGameList,
+                            homeTeamPlayerSortType = homeTeamPlayerSortType,
+                            awayTeamPlayerSortType = awayTeamPlayerSortType,
+                            onSortTypeChange = onSortTypeChange
                         )
                     } else {
                         HomeScreenPartiallyExpandedSheetContent(
                             gameDate = selectedDate,
-                            gameData = selectedDateGameList
+                            gameData = selectedDateGameList,
+                            homeTeamPlayerSortType = homeTeamPlayerSortType,
+                            awayTeamPlayerSortType = awayTeamPlayerSortType,
+                            onSortTypeChange = onSortTypeChange
                         )
                     }
                 },
@@ -304,7 +317,7 @@ private fun HomeScreen(
                 },
                 onGameTypeSelect = { gameType ->
                     gameTypeDialogVisible = false
-                    onGameTypeSelect(gameType)
+                    onGameTypeSelect(gameType, selectedDate)
                 }
             )
         }
@@ -314,7 +327,10 @@ private fun HomeScreen(
 @Composable
 private fun HomeScreenPartiallyExpandedSheetContent(
     gameDate: GameDate,
-    gameData: ImmutableList<GameData>
+    gameData: ImmutableList<GameData>,
+    homeTeamPlayerSortType: SortType,
+    awayTeamPlayerSortType: SortType,
+    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(
@@ -340,7 +356,12 @@ private fun HomeScreenPartiallyExpandedSheetContent(
         }
         // 게임 기록이 있는 경우
         else {
-            GameScoreTable(gameData.first())
+            GameScoreTable(
+                gameData.first(),
+                homeTeamPlayerSortType = homeTeamPlayerSortType,
+                awayTeamPlayerSortType = awayTeamPlayerSortType,
+                onSortTypeChange = onSortTypeChange
+            )
         }
     }
 }
@@ -348,7 +369,10 @@ private fun HomeScreenPartiallyExpandedSheetContent(
 @Composable
 private fun HomeScreenExpandedSheetContent(
     selectedDate: GameDate,
-    gameData: ImmutableList<GameData>
+    gameData: ImmutableList<GameData>,
+    homeTeamPlayerSortType: SortType,
+    awayTeamPlayerSortType: SortType,
+    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit
 ) {
     var curGameIdx by remember { mutableIntStateOf(0) }
 
@@ -435,7 +459,12 @@ private fun HomeScreenExpandedSheetContent(
                     )
                 }
             }
-            GameScoreTable(gameData.first())
+            GameScoreTable(
+                gameData.first(),
+                homeTeamPlayerSortType = homeTeamPlayerSortType,
+                awayTeamPlayerSortType = awayTeamPlayerSortType,
+                onSortTypeChange = onSortTypeChange
+            )
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
@@ -444,7 +473,10 @@ private fun HomeScreenExpandedSheetContent(
 @Composable
 private fun GameScoreTable(
     gameData: GameData,
-    modifier: Modifier = Modifier
+    homeTeamPlayerSortType: SortType,
+    awayTeamPlayerSortType: SortType,
+    modifier: Modifier = Modifier,
+    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit
 ) {
     BballTendingTheme {
         Column(modifier = modifier) {
@@ -471,7 +503,11 @@ private fun GameScoreTable(
             }
             ScoreTable(
                 playerDataList = gameData.homeTeamPlayer.toImmutableList(),
-                modifier = Modifier.padding(top = 10.dp)
+                sortType = homeTeamPlayerSortType,
+                modifier = Modifier.padding(top = 10.dp),
+                onSortTypeChange = { sortType ->
+                    onSortTypeChange(sortType, true)
+                }
             )
 
             Row(
@@ -497,7 +533,11 @@ private fun GameScoreTable(
             }
             ScoreTable(
                 playerDataList = gameData.awayTeamPlayer.toImmutableList(),
-                modifier = Modifier.padding(top = 10.dp)
+                sortType = awayTeamPlayerSortType,
+                modifier = Modifier.padding(top = 10.dp),
+                onSortTypeChange = { sortType ->
+                    onSortTypeChange(sortType, false)
+                }
             )
         }
     }
@@ -528,7 +568,7 @@ private fun NoGameInfo(
 private fun HomeScreenPreview() {
     BballTendingTheme {
         HomeScreen(
-            onGameTypeSelect = {}
+            onGameTypeSelect = { _, _ -> }
         )
     }
 }

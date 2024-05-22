@@ -14,10 +14,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -44,13 +40,11 @@ import java.text.DecimalFormat
 @Composable
 fun ScoreTable(
     playerDataList: ImmutableList<PlayerData>,
-    modifier: Modifier = Modifier
+    sortType: SortType,
+    modifier: Modifier = Modifier,
+    onSortTypeChange: (sortType: SortType) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-
-    var sortType by remember { mutableStateOf(SortType.DEFAULT) }
-    val originalPlayerDataList by remember { mutableStateOf(playerDataList) }
-    var sortedPlayerDataList by remember { mutableStateOf(playerDataList) }
 
     BballTendingTheme {
         Column(
@@ -60,23 +54,14 @@ fun ScoreTable(
         ) {
             ScoreTableHeaderRow(
                 selectedSortType = sortType,
-                onSortTypeChange = { selectedSortType ->
-                    sortType = if (sortType == selectedSortType) {
-                        sortedPlayerDataList = originalPlayerDataList
-                        SortType.DEFAULT
-                    } else {
-                        sortedPlayerDataList =
-                            sortPlayerDataList(originalPlayerDataList, selectedSortType)
-                        selectedSortType
-                    }
-                }
+                onSortTypeChange = onSortTypeChange
             )
 
-            sortedPlayerDataList.forEachIndexed { idx, playerData ->
+            sortPlayerDataList(playerDataList, sortType).forEachIndexed { idx, playerData ->
                 ScoreTableCellRow(
                     playerData = playerData,
                     selectedSortType = sortType,
-                    isLastRow = idx == sortedPlayerDataList.lastIndex
+                    isLastRow = idx == playerDataList.lastIndex
                 )
             }
         }
@@ -807,7 +792,10 @@ private fun ScoreTableCellRow(
 fun ScoreTablePreview() {
     BballTendingTheme {
         val testData = TestModule.createTestData()
-        ScoreTable(testData.homeTeamPlayer.toImmutableList())
+        ScoreTable(
+            testData.homeTeamPlayer.toImmutableList(),
+            SortType.DEFAULT
+        )
     }
 }
 

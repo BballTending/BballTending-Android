@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.model.GameDate
+import com.bballtending.android.domain.game.model.SortType
 import com.bballtending.android.domain.game.repository.GameRepository
 import com.bballtending.android.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,6 +49,22 @@ class HomeViewModel @Inject constructor(
                     selectedDate = gameDate,
                     selectedDateGameList = it.gameMap[gameDate] ?: listOf()
                 )
+            }
+        }
+    }
+
+    fun onSortTypeChange(sortType: SortType, isHomeTeam: Boolean) {
+        viewModelScope.launch {
+            _uiState.update {
+                if (isHomeTeam) {
+                    val newSortType =
+                        if (it.homeTeamPlayerSortType == sortType) SortType.DEFAULT else sortType
+                    it.copy(homeTeamPlayerSortType = newSortType)
+                } else {
+                    val newSortType =
+                        if (it.awayTeamPlayerSortType == sortType) SortType.DEFAULT else sortType
+                    it.copy(awayTeamPlayerSortType = newSortType)
+                }
             }
         }
     }
