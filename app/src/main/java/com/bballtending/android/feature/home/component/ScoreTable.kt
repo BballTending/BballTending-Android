@@ -768,9 +768,9 @@ private fun ScoreTableCellRow(
                         strokeWidth = 1.dp,
                         color = BorderGray,
                         borderList = if (isLastRow) {
-                            listOf(Border.LEFT, Border.TOP, Border.RIGHT)
-                        } else {
                             listOf(Border.LEFT, Border.TOP, Border.RIGHT, Border.BOTTOM)
+                        } else {
+                            listOf(Border.LEFT, Border.TOP, Border.RIGHT)
                         }
                     )
             ) {
