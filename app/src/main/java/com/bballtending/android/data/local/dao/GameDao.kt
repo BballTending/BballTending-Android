@@ -9,7 +9,7 @@ import com.bballtending.android.data.local.entity.GameEntity
 @Dao
 interface GameDao {
     @Insert
-    suspend fun insert(gameEntity: GameEntity)
+    suspend fun insert(gameEntity: GameEntity): Long
 
     @Delete
     suspend fun delete(gameEntity: GameEntity)
@@ -19,4 +19,7 @@ interface GameDao {
 
     @Query("SELECT * FROM game_table WHERE year = :year AND month = :month")
     suspend fun findGameWithYearAndMonth(year: Int, month: Int): List<GameEntity>
+
+    @Query("SELECT * FROM game_table WHERE game_id = :gameId")
+    suspend fun findGameWithGameId(gameId: Long): GameEntity
 }

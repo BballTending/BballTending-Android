@@ -8,6 +8,7 @@
     <string name="quarter_format">%1$dQ</string>
     <string name="playTime_format">%1$d분</string>
     <string name="breakTime_format">%1$d분</string>
+    <string name="targetScore_format">%1$d점</string>
 
     <string name="msg_play_game">경기 시작하기</string>
     <string name="msg_add_game">경기 추가하기</string>
@@ -53,6 +54,7 @@
     <string name="addGame_gameTimeContent_quarter">쿼 터</string>
     <string name="addGame_gameTimeContent_playTime">경기 시간</string>
     <string name="addGame_gameTimeContent_breakTime">쉬는 시간</string>
+    <string name="addGame_gameTimeContent_targetScore">목표 점수</string>
     <string name="addGame_gameTimeContent_info">쿼터 수, 경기 시간, 쉬는 시간을 변경할 수 있어요.</string>
     <string name="addGame_playerInfoContent_title">%1$s 선수 정보를 입력해 주세요.</string>
     <string name="addGame_playerInfoContent_totalPlayer">총 인원: %1$d명</string>

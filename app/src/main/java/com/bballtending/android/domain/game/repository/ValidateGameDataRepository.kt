@@ -18,4 +18,10 @@ interface ValidateGameDataRepository {
      * @param breakTime 쉬는 시간
      */
     fun validateBreakTime(breakTime: Int): Boolean
+
+    /**
+     * 목표 점수가 유효한 값인지 판단
+     * @param targetScore 목표 점수
+     */
+    fun validateTargetScore(targetScore: Int): Boolean
 }

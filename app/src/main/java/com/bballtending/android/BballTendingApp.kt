@@ -20,8 +20,8 @@ fun BballTendingApp(
             startDestination = HOME_SCREEN_ROUTE
         ) {
             homeScreen(
-                onGameTypeSelect = { gameType ->
-                    navController.navigate(ADD_GAME_SCREEN_ROUTE)
+                onGameTypeSelect = { gameType, gameDate ->
+                    navController.navigate("$ADD_GAME_SCREEN_ROUTE/${gameType.ordinal}/${gameDate.year}/${gameDate.month}/${gameDate.day}")
                 }
             )
             addGameScreen(
@@ -31,6 +31,9 @@ fun BballTendingApp(
                         inclusive = false,
                         saveState = false
                     )
+                },
+                onStartGame = {
+                    
                 }
             )
         }

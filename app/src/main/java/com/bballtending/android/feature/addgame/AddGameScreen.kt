@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,10 +46,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.bballtending.android.R
 import com.bballtending.android.TestModule
+import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.player.model.Position
@@ -66,25 +72,77 @@ import com.bballtending.android.ui.theme.TextBlack
 import com.bballtending.android.ui.theme.TextHintGray
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import java.time.LocalDate
 
 const val ADD_GAME_SCREEN_ROUTE: String = "add_game"
+const val ADD_GAME_TYPE_ARGS: String = "game_type"
+const val ADD_GAME_DATE_YEAR_ARGS: String = "game_date_year"
+const val ADD_GAME_DATE_MONTH_ARGS: String = "game_date_month"
+const val ADD_GAME_DATE_DAY_ARGS: String = "game_date_day"
+const val ADD_GAME_SCREEN_NAV_URI: String =
+    "$ADD_GAME_SCREEN_ROUTE/{$ADD_GAME_TYPE_ARGS}/{$ADD_GAME_DATE_YEAR_ARGS}/{$ADD_GAME_DATE_MONTH_ARGS}/{$ADD_GAME_DATE_DAY_ARGS}"
 
 fun NavGraphBuilder.addGameScreen(
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onStartGame: (GameData) -> Unit
 ) {
     composable(
-        route = ADD_GAME_SCREEN_ROUTE
+        route = ADD_GAME_SCREEN_NAV_URI,
+        arguments = listOf(
+            navArgument(ADD_GAME_TYPE_ARGS) { type = NavType.IntType },
+            navArgument(ADD_GAME_DATE_YEAR_ARGS) { type = NavType.IntType },
+            navArgument(ADD_GAME_DATE_MONTH_ARGS) { type = NavType.IntType },
+            navArgument(ADD_GAME_DATE_DAY_ARGS) { type = NavType.IntType }
+        )
     ) {
-        AddGameScreen(onClose)
+        AddGameScreen(
+            onClose = onClose,
+            onStartGame = onStartGame,
+            navBackStackEntry = it
+        )
     }
 }
 
 @Composable
 private fun AddGameScreen(
     onClose: () -> Unit,
+    onStartGame: (GameData) -> Unit,
+    navBackStackEntry: NavBackStackEntry
+) {
+    val gameType = (navBackStackEntry.arguments?.getInt(ADD_GAME_TYPE_ARGS) ?: 0)
+        .let { gameTypeArgs: Int ->
+            GameType.values().first() {
+                it.ordinal == gameTypeArgs
+            }
+        }
+    val gameDateYear = navBackStackEntry.arguments?.getInt(ADD_GAME_DATE_YEAR_ARGS)
+    val gameDateMonth = navBackStackEntry.arguments?.getInt(ADD_GAME_DATE_MONTH_ARGS)
+    val gameDateDay = navBackStackEntry.arguments?.getInt(ADD_GAME_DATE_DAY_ARGS)
+    val gameDate = if (gameDateYear != null && gameDateMonth != null && gameDateDay != null) {
+        GameDate(gameDateYear, gameDateMonth, gameDateDay)
+    } else {
+        val localDate = LocalDate.now()
+        GameDate(localDate.year, localDate.monthValue, localDate.dayOfMonth)
+    }
+
+    val addGameViewModel: AddGameViewModel = hiltViewModel()
+    addGameViewModel.initData(gameType = gameType, gameDate = gameDate)
+
+    AddGameScreen(onClose = onClose, onStartGame = onStartGame, addGameViewModel = addGameViewModel)
+}
+
+@Composable
+private fun AddGameScreen(
+    onClose: () -> Unit,
+    onStartGame: (GameData) -> Unit,
     addGameViewModel: AddGameViewModel = hiltViewModel()
 ) {
     val uiState: AddGameUiState by addGameViewModel.uiState.collectAsStateWithLifecycle()
+    val createdGameData: GameData? by addGameViewModel.createdGameData.collectAsStateWithLifecycle()
+
+    LaunchedEffect(createdGameData) {
+        createdGameData?.let(onStartGame)
+    }
 
     AddGameScreen(
         playingNow = uiState.playingNow,
@@ -98,6 +156,9 @@ private fun AddGameScreen(
         breakTime = uiState.breakTime,
         breakTimeMinusEnable = uiState.breakTimeMinusEnable,
         breakTimePlusEnable = uiState.breakTimePlusEnable,
+        targetScore = uiState.targetScore,
+        targetScoreMinusEnable = uiState.targetScoreMinusEnable,
+        targetScorePlusEnable = uiState.targetScorePlusEnable,
         homeTeamPlayer = uiState.homeTeamPlayer.toImmutableList(),
         awayTeamPlayer = uiState.awayTeamPlayer.toImmutableList(),
         startGameEnable = uiState.startGameEnable,
@@ -106,9 +167,11 @@ private fun AddGameScreen(
         onQuarterChange = addGameViewModel::onQuarterChange,
         onPlayTimeChange = addGameViewModel::onPlayTimeChange,
         onBreakTimeChange = addGameViewModel::onBreakTimeChange,
+        onTargetScoreChange = addGameViewModel::onTargetScoreChange,
         onPlayerAdded = addGameViewModel::onPlayerAdded,
         onPlayerModified = addGameViewModel::onPlayerModified,
         onPlayerRemoved = addGameViewModel::onPlayerRemoved,
+        onStartGame = addGameViewModel::onStartGame,
         onClose = onClose
     )
 }
@@ -116,8 +179,8 @@ private fun AddGameScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddGameScreen(
-    playingNow: Boolean?,
-    gameType: GameType?,
+    playingNow: Boolean,
+    gameType: GameType,
     quarter: Int,
     quarterMinusEnable: Boolean,
     quarterPlusEnable: Boolean,
@@ -127,6 +190,9 @@ private fun AddGameScreen(
     breakTime: Int,
     breakTimeMinusEnable: Boolean,
     breakTimePlusEnable: Boolean,
+    targetScore: Int,
+    targetScoreMinusEnable: Boolean,
+    targetScorePlusEnable: Boolean,
     homeTeamPlayer: ImmutableList<PlayerData>,
     awayTeamPlayer: ImmutableList<PlayerData>,
     startGameEnable: Boolean,
@@ -135,9 +201,11 @@ private fun AddGameScreen(
     onQuarterChange: (Int) -> Unit,
     onPlayTimeChange: (Int) -> Unit,
     onBreakTimeChange: (Int) -> Unit,
+    onTargetScoreChange: (Int) -> Unit,
     onPlayerAdded: (Boolean, String, String, Position) -> Boolean,
     onPlayerModified: (Boolean, PlayerData) -> Boolean,
     onPlayerRemoved: (Boolean, PlayerData) -> Unit,
+    onStartGame: () -> Unit,
     onClose: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
@@ -203,6 +271,7 @@ private fun AddGameScreen(
                         .background(color = BballTendingTheme.colors.background)
                 )
                 GameTimeContent(
+                    gameType = gameType,
                     quarter = quarter,
                     quarterMinusEnable = quarterMinusEnable,
                     quarterPlusEnable = quarterPlusEnable,
@@ -212,9 +281,13 @@ private fun AddGameScreen(
                     breakTime = breakTime,
                     breakTimeMinusEnable = breakTimeMinusEnable,
                     breakTimePlusEnable = breakTimePlusEnable,
+                    targetScore = targetScore,
+                    targetScoreMinusEnable = targetScoreMinusEnable,
+                    targetScorePlusEnable = targetScorePlusEnable,
                     onQuarterChange = onQuarterChange,
                     onPlayTimeChange = onPlayTimeChange,
                     onBreakTimeChange = onBreakTimeChange,
+                    onTargetScoreChange = onTargetScoreChange,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
@@ -256,7 +329,7 @@ private fun AddGameScreen(
                 )
                 Button(
                     onClick = {
-
+                        onStartGame()
                     },
                     modifier = Modifier
                         .padding(top = 20.dp)
@@ -310,7 +383,7 @@ private fun AddGameScreen(
 
 @Composable
 private fun PlayingNowContent(
-    playingNow: Boolean?,
+    playingNow: Boolean,
     onPlayingNowSelect: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -333,9 +406,9 @@ private fun PlayingNowContent(
                     .noRippleClickable { onPlayingNowSelect(true) }
                     .padding(start = 15.dp, top = 24.dp, end = 15.dp)
                     .fillMaxWidth()
-                    .background(color = if (playingNow == true) selectedBgColor else unselectedBgColor)
+                    .background(color = if (playingNow) selectedBgColor else unselectedBgColor)
                     .then(
-                        if (playingNow != true)
+                        if (!playingNow)
                             Modifier.border(width = 1.dp, color = BorderGray)
                         else
                             Modifier
@@ -346,7 +419,7 @@ private fun PlayingNowContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 18.dp, top = 14.dp, end = 18.dp, bottom = 12.dp),
-                    style = if (playingNow == true) selectedFontStyle else unselectedFontStyle
+                    style = if (playingNow) selectedFontStyle else unselectedFontStyle
                 )
             }
             Box(
@@ -354,9 +427,9 @@ private fun PlayingNowContent(
                     .noRippleClickable { onPlayingNowSelect(false) }
                     .padding(start = 15.dp, top = 10.dp, end = 15.dp, bottom = 24.dp)
                     .fillMaxWidth()
-                    .background(color = if (playingNow == false) selectedBgColor else unselectedBgColor)
+                    .background(color = if (!playingNow) selectedBgColor else unselectedBgColor)
                     .then(
-                        if (playingNow != false)
+                        if (playingNow)
                             Modifier.border(width = 1.dp, color = BorderGray)
                         else
                             Modifier
@@ -367,7 +440,7 @@ private fun PlayingNowContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 18.dp, top = 14.dp, end = 18.dp, bottom = 12.dp),
-                    style = if (playingNow == false) selectedFontStyle else unselectedFontStyle
+                    style = if (!playingNow) selectedFontStyle else unselectedFontStyle
                 )
             }
 
@@ -445,6 +518,7 @@ private fun GameTypeContent(
 
 @Composable
 private fun GameTimeContent(
+    gameType: GameType,
     quarter: Int,
     quarterMinusEnable: Boolean,
     quarterPlusEnable: Boolean,
@@ -454,9 +528,13 @@ private fun GameTimeContent(
     breakTime: Int,
     breakTimeMinusEnable: Boolean,
     breakTimePlusEnable: Boolean,
+    targetScore: Int,
+    targetScoreMinusEnable: Boolean,
+    targetScorePlusEnable: Boolean,
     onQuarterChange: (Int) -> Unit,
     onPlayTimeChange: (Int) -> Unit,
     onBreakTimeChange: (Int) -> Unit,
+    onTargetScoreChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     BballTendingTheme {
@@ -565,49 +643,99 @@ private fun GameTimeContent(
                     }
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.addGame_gameTimeContent_breakTime),
-                    modifier = Modifier
-                        .padding(start = 15.dp, bottom = 7.dp)
-                        .align(Alignment.CenterVertically),
-                    style = BballTendingTheme.typography.regular.copy(fontSize = 15.sp)
-                )
-
-                Row {
-                    IconButton(
-                        onClick = {
-                            onBreakTimeChange(-1)
-                        },
-                        modifier = Modifier,
-                        enabled = breakTimeMinusEnable
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_minus),
-                            contentDescription = "Minus"
-                        )
-                    }
+            if (quarter > 1) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = stringResource(id = R.string.breakTime_format, breakTime),
+                        text = stringResource(id = R.string.addGame_gameTimeContent_breakTime),
                         modifier = Modifier
-                            .widthIn(min = 80.dp)
+                            .padding(start = 15.dp, bottom = 7.dp)
                             .align(Alignment.CenterVertically),
-                        style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp),
-                        textAlign = TextAlign.Center
+                        style = BballTendingTheme.typography.regular.copy(fontSize = 15.sp)
                     )
-                    IconButton(
-                        onClick = {
-                            onBreakTimeChange(1)
-                        },
-                        enabled = breakTimePlusEnable
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_plus),
-                            contentDescription = "Plus"
+
+                    Row {
+                        IconButton(
+                            onClick = {
+                                onBreakTimeChange(-1)
+                            },
+                            modifier = Modifier,
+                            enabled = breakTimeMinusEnable
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_minus),
+                                contentDescription = "Minus"
+                            )
+                        }
+                        Text(
+                            text = stringResource(id = R.string.breakTime_format, breakTime),
+                            modifier = Modifier
+                                .widthIn(min = 80.dp)
+                                .align(Alignment.CenterVertically),
+                            style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp),
+                            textAlign = TextAlign.Center
                         )
+                        IconButton(
+                            onClick = {
+                                onBreakTimeChange(1)
+                            },
+                            enabled = breakTimePlusEnable
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_plus),
+                                contentDescription = "Plus"
+                            )
+                        }
+                    }
+                }
+            }
+            if (gameType == GameType.HALF_COURT) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.addGame_gameTimeContent_targetScore),
+                        modifier = Modifier
+                            .padding(start = 15.dp, bottom = 7.dp)
+                            .align(Alignment.CenterVertically),
+                        style = BballTendingTheme.typography.regular.copy(fontSize = 15.sp)
+                    )
+
+                    Row {
+                        IconButton(
+                            onClick = {
+                                onTargetScoreChange(-1)
+                            },
+                            modifier = Modifier,
+                            enabled = targetScoreMinusEnable
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_minus),
+                                contentDescription = "Minus"
+                            )
+                        }
+                        Text(
+                            text = stringResource(id = R.string.targetScore_format, targetScore),
+                            modifier = Modifier
+                                .widthIn(min = 80.dp)
+                                .align(Alignment.CenterVertically),
+                            style = BballTendingTheme.typography.medium.copy(fontSize = 15.sp),
+                            textAlign = TextAlign.Center
+                        )
+                        IconButton(
+                            onClick = {
+                                onTargetScoreChange(1)
+                            },
+                            enabled = targetScorePlusEnable
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_plus),
+                                contentDescription = "Plus"
+                            )
+                        }
                     }
                 }
             }
@@ -710,6 +838,9 @@ private fun AddGameScreenPreview() {
             breakTime = 5,
             breakTimeMinusEnable = true,
             breakTimePlusEnable = true,
+            targetScore = 21,
+            targetScoreMinusEnable = true,
+            targetScorePlusEnable = true,
             homeTeamPlayer = testData.homeTeamPlayer.toImmutableList(),
             awayTeamPlayer = testData.awayTeamPlayer.toImmutableList(),
             startGameEnable = false,
@@ -718,9 +849,11 @@ private fun AddGameScreenPreview() {
             onQuarterChange = {},
             onPlayTimeChange = {},
             onBreakTimeChange = {},
+            onTargetScoreChange = {},
             onPlayerAdded = { _, _, _, _ -> true },
             onPlayerModified = { _, _ -> true },
             onPlayerRemoved = { _, _ -> },
+            onStartGame = {},
             onClose = {}
         )
     }

@@ -18,6 +18,10 @@ class ValidateGameDataRepositoryImpl @Inject constructor() : ValidateGameDataRep
         return breakTime in MIN_BREAK_TIME..MAX_BREAK_TIME
     }
 
+    override fun validateTargetScore(targetScore: Int): Boolean {
+        return targetScore in MIN_TARGET_SCORE..MAX_TARGET_SCORE
+    }
+
     companion object {
         private const val MIN_QUARTER: Int = 1
         private const val MAX_QUARTER: Int = 4
@@ -27,5 +31,8 @@ class ValidateGameDataRepositoryImpl @Inject constructor() : ValidateGameDataRep
 
         private const val MIN_BREAK_TIME: Int = 0
         private const val MAX_BREAK_TIME: Int = 60
+
+        private const val MIN_TARGET_SCORE: Int = 1
+        private const val MAX_TARGET_SCORE: Int = 21
     }
 }

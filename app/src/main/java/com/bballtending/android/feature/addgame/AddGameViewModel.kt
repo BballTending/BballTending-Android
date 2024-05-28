@@ -2,10 +2,17 @@ package com.bballtending.android.feature.addgame
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.NetworkResult
+import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.model.GameType
-import com.bballtending.android.domain.game.repository.ValidateGameDataRepository
 import com.bballtending.android.domain.game.usecase.AddPlayerUseCase
+import com.bballtending.android.domain.game.usecase.ChangeBreakTimeUseCase
+import com.bballtending.android.domain.game.usecase.ChangePlayTimeUseCase
+import com.bballtending.android.domain.game.usecase.ChangeQuarterUseCase
+import com.bballtending.android.domain.game.usecase.ChangeTargetScoreUseCase
+import com.bballtending.android.domain.game.usecase.CreateGameUseCase
 import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.player.model.Position
 import com.bballtending.android.feature.addgame.model.AddGameUiState
@@ -15,16 +22,46 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class AddGameViewModel @Inject constructor(
-    private val validateGameDataRepository: ValidateGameDataRepository,
-    private val addPlayerUseCase: AddPlayerUseCase
+    private val changeQuarterUseCase: ChangeQuarterUseCase,
+    private val changePlayTimeUseCase: ChangePlayTimeUseCase,
+    private val changeBreakTimeUseCase: ChangeBreakTimeUseCase,
+    private val changeTargetScoreUseCase: ChangeTargetScoreUseCase,
+    private val addPlayerUseCase: AddPlayerUseCase,
+    private val createGameUseCase: CreateGameUseCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<AddGameUiState> = MutableStateFlow(AddGameUiState())
     val uiState: StateFlow<AddGameUiState> = _uiState.asStateFlow()
+
+    private val _createdGameData: MutableStateFlow<GameData?> = MutableStateFlow(null)
+    val createdGameData: StateFlow<GameData?> = _createdGameData.asStateFlow()
+
+    private var gameDate: GameDate = GameDate(0, 0, 0)
+
+    fun initData(
+        gameType: GameType,
+        gameDate: GameDate
+    ) {
+        val localDateTime = LocalDateTime.now()
+        val playingNow = localDateTime.run {
+            (gameDate.year == year) && (gameDate.month == monthValue) && (gameDate.day == dayOfMonth)
+        }
+        this.gameDate = gameDate
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    playingNow = playingNow,
+                    hour = localDateTime.hour,
+                    minute = localDateTime.minute
+                ).withGameType(gameType)
+            }
+        }
+    }
 
     fun onPlayingNowSelect(playingNow: Boolean) {
         viewModelScope.launch {
@@ -37,7 +74,7 @@ class AddGameViewModel @Inject constructor(
     fun onGameTypeSelect(gameType: GameType) {
         viewModelScope.launch {
             _uiState.update {
-                it.copy(gameType = gameType)
+                it.copy().withGameType(gameType)
             }
         }
     }
@@ -53,12 +90,12 @@ class AddGameViewModel @Inject constructor(
                 return@launch
             }
 
-            if (validateGameDataRepository.validateQuarter(quarter)) {
+            if (changeQuarterUseCase(quarter)) {
                 _uiState.update {
                     it.copy(
                         quarter = quarter,
-                        quarterMinusEnable = validateGameDataRepository.validateQuarter(quarter - 1),
-                        quarterPlusEnable = validateGameDataRepository.validateQuarter(quarter + 1)
+                        quarterMinusEnable = changeQuarterUseCase(quarter - 1),
+                        quarterPlusEnable = changeQuarterUseCase(quarter + 1)
                     )
                 }
             }
@@ -76,16 +113,12 @@ class AddGameViewModel @Inject constructor(
                 return@launch
             }
 
-            if (validateGameDataRepository.validatePlayTime(playTime)) {
+            if (changePlayTimeUseCase(playTime)) {
                 _uiState.update {
                     it.copy(
                         playTime = playTime,
-                        playTimeMinusEnable = validateGameDataRepository.validatePlayTime(
-                            playTime - 1
-                        ),
-                        playTimePlusEnable = validateGameDataRepository.validatePlayTime(
-                            playTime + 1
-                        )
+                        playTimeMinusEnable = changePlayTimeUseCase(playTime - 1),
+                        playTimePlusEnable = changePlayTimeUseCase(playTime + 1)
                     )
                 }
             }
@@ -103,16 +136,35 @@ class AddGameViewModel @Inject constructor(
                 return@launch
             }
 
-            if (validateGameDataRepository.validateBreakTime(breakTime)) {
+            if (changeBreakTimeUseCase(breakTime)) {
                 _uiState.update {
                     it.copy(
                         breakTime = breakTime,
-                        breakTimeMinusEnable = validateGameDataRepository.validateBreakTime(
-                            breakTime - 1
-                        ),
-                        breakTimePlusEnable = validateGameDataRepository.validateBreakTime(
-                            breakTime + 1
-                        )
+                        breakTimeMinusEnable = changeBreakTimeUseCase(breakTime - 1),
+                        breakTimePlusEnable = changeBreakTimeUseCase(breakTime + 1)
+                    )
+                }
+            }
+        }
+    }
+
+    fun onTargetScoreChange(sign: Int) {
+        viewModelScope.launch {
+            val prevTargetScore = uiState.value.targetScore
+            val targetScore = if (sign > 0) {
+                prevTargetScore + 1
+            } else if (sign < 0) {
+                prevTargetScore - 1
+            } else {
+                return@launch
+            }
+
+            if (changeTargetScoreUseCase(targetScore)) {
+                _uiState.update {
+                    it.copy(
+                        targetScore = targetScore,
+                        targetScoreMinusEnable = changeTargetScoreUseCase(targetScore - 1),
+                        targetScorePlusEnable = changeTargetScoreUseCase(targetScore + 1)
                     )
                 }
             }
@@ -171,6 +223,32 @@ class AddGameViewModel @Inject constructor(
                     it.copy(homeTeamPlayer = newList)
                 else
                     it.copy(awayTeamPlayer = newList)
+            }
+        }
+    }
+
+    fun onStartGame() {
+        viewModelScope.launch {
+            val uiState = uiState.value
+            val gameDate = gameDate
+            val gameData = createGameUseCase(
+                uiState.gameType,
+                gameDate.year,
+                gameDate.month,
+                gameDate.day,
+                uiState.hour,
+                uiState.minute,
+                uiState.quarter,
+                uiState.playTime,
+                uiState.breakTime,
+                uiState.homeTeamPlayer,
+                uiState.awayTeamPlayer
+            )
+            if (gameData is NetworkResult.Success) {
+                DLog.d(TAG, "gameData=$gameData")
+                _createdGameData.emit(gameData.data)
+            } else {
+                // TODO: 예외 처리 필요?
             }
         }
     }
