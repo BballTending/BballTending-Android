@@ -26,6 +26,7 @@ data class AddGameUiState(
     fun withGameType(gameType: GameType): AddGameUiState = when (gameType) {
         GameType.HALF_COURT -> {
             copy(
+                gameType = gameType,
                 quarter = 1,
                 quarterMinusEnable = false,
                 quarterPlusEnable = true,
@@ -43,6 +44,7 @@ data class AddGameUiState(
 
         GameType.FULL_COURT -> {
             copy(
+                gameType = gameType,
                 quarter = 4,
                 quarterMinusEnable = true,
                 quarterPlusEnable = false,
