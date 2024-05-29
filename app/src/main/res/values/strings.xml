@@ -49,6 +49,8 @@
     <string name="addGame_playingNowContent_title">경기를 추가하실 방법을 선택해 주세요.</string>
     <string name="addGame_playingNowContent_playingNow">지금 경기를 시작할래요.</string>
     <string name="addGame_playingNowContent_lastGame">지난 경기 결과를 입력할래요.</string>
+    <string name="addGame_nowGameStartTimeContent_title">경기를 시작할 시간을 입력해 주세요.</string>
+    <string name="addGame_lastGameStartTimeContent_title">경기를 시작했던 시간을 입력해 주세요.</string>
     <string name="addGame_gameTypeContent_title">경기 종류를 선택해 주세요.</string>
     <string name="addGame_gameTimeContent_title">경기 시간을 알려주세요.</string>
     <string name="addGame_gameTimeContent_quarter">쿼 터</string>

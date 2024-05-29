@@ -63,6 +63,7 @@ import com.bballtending.android.feature.addgame.component.AddPlayerCard
 import com.bballtending.android.feature.addgame.component.PlayerInfoCard
 import com.bballtending.android.feature.addgame.model.AddGameUiState
 import com.bballtending.android.feature.border
+import com.bballtending.android.feature.component.BballTendingTimePicker
 import com.bballtending.android.feature.dialog.PlayerInfoDialog
 import com.bballtending.android.ui.noRippleClickable
 import com.bballtending.android.ui.preview.DevicePreview
@@ -111,7 +112,7 @@ private fun AddGameScreen(
 ) {
     val gameType = (navBackStackEntry.arguments?.getInt(ADD_GAME_TYPE_ARGS) ?: 0)
         .let { gameTypeArgs: Int ->
-            GameType.values().first() {
+            GameType.values().first {
                 it.ordinal == gameTypeArgs
             }
         }
@@ -146,6 +147,8 @@ private fun AddGameScreen(
 
     AddGameScreen(
         playingNow = uiState.playingNow,
+        hour = uiState.hour,
+        minute = uiState.minute,
         gameType = uiState.gameType,
         quarter = uiState.quarter,
         quarterMinusEnable = uiState.quarterMinusEnable,
@@ -163,6 +166,8 @@ private fun AddGameScreen(
         awayTeamPlayer = uiState.awayTeamPlayer.toImmutableList(),
         startGameEnable = uiState.startGameEnable,
         onPlayingNowSelect = addGameViewModel::onPlayingNowSelect,
+        onHourChanged = addGameViewModel::onHourChanged,
+        onMinuteChanged = addGameViewModel::onMinuteChanged,
         onGameTypeSelect = addGameViewModel::onGameTypeSelect,
         onQuarterChange = addGameViewModel::onQuarterChange,
         onPlayTimeChange = addGameViewModel::onPlayTimeChange,
@@ -180,6 +185,8 @@ private fun AddGameScreen(
 @Composable
 private fun AddGameScreen(
     playingNow: Boolean,
+    hour: Int,
+    minute: Int,
     gameType: GameType,
     quarter: Int,
     quarterMinusEnable: Boolean,
@@ -197,6 +204,8 @@ private fun AddGameScreen(
     awayTeamPlayer: ImmutableList<PlayerData>,
     startGameEnable: Boolean,
     onPlayingNowSelect: (Boolean) -> Unit,
+    onHourChanged: (Int) -> Unit,
+    onMinuteChanged: (Int) -> Unit,
     onGameTypeSelect: (GameType) -> Unit,
     onQuarterChange: (Int) -> Unit,
     onPlayTimeChange: (Int) -> Unit,
@@ -262,6 +271,19 @@ private fun AddGameScreen(
                         .background(color = BballTendingTheme.colors.background)
                         .padding(top = 14.dp)
                 )
+                if (!playingNow) {
+                    GameStartTimeContent(
+                        playingNow = playingNow,
+                        hour = hour,
+                        minute = minute,
+                        onHourChanged = onHourChanged,
+                        onMinuteChanged = onMinuteChanged,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp)
+                            .background(color = BballTendingTheme.colors.background)
+                    )
+                }
                 GameTypeContent(
                     gameType = gameType,
                     onGameTypeSelect = onGameTypeSelect,
@@ -443,14 +465,40 @@ private fun PlayingNowContent(
                     style = if (!playingNow) selectedFontStyle else unselectedFontStyle
                 )
             }
+        }
+    }
+}
 
+@Composable
+private fun GameStartTimeContent(
+    playingNow: Boolean,
+    hour: Int,
+    minute: Int,
+    onHourChanged: (Int) -> Unit,
+    onMinuteChanged: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BballTendingTheme {
+        Column(modifier = modifier) {
+            Text(
+                text = stringResource(id = if (playingNow) R.string.addGame_nowGameStartTimeContent_title else R.string.addGame_lastGameStartTimeContent_title),
+                modifier = Modifier.padding(start = 15.dp, top = 20.dp),
+                style = BballTendingTheme.typography.bold.copy(fontSize = 16.sp)
+            )
+            BballTendingTimePicker(
+                initHour = hour,
+                initMinute = minute,
+                onHourChanged = onHourChanged,
+                onMinuteChanged = onMinuteChanged,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
     }
 }
 
 @Composable
 private fun GameTypeContent(
-    gameType: GameType?,
+    gameType: GameType,
     onGameTypeSelect: (GameType) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -828,6 +876,8 @@ private fun AddGameScreenPreview() {
     BballTendingTheme {
         AddGameScreen(
             playingNow = true,
+            hour = 14,
+            minute = 39,
             gameType = GameType.FULL_COURT,
             quarter = 4,
             quarterMinusEnable = true,
@@ -845,6 +895,8 @@ private fun AddGameScreenPreview() {
             awayTeamPlayer = testData.awayTeamPlayer.toImmutableList(),
             startGameEnable = false,
             onPlayingNowSelect = {},
+            onHourChanged = {},
+            onMinuteChanged = {},
             onGameTypeSelect = {},
             onQuarterChange = {},
             onPlayTimeChange = {},

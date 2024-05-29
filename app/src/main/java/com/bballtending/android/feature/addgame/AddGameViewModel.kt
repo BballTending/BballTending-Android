@@ -71,6 +71,23 @@ class AddGameViewModel @Inject constructor(
         }
     }
 
+    fun onHourChanged(hour: Int) {
+        DLog.d(TAG, "hour=$hour")
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(hour = hour)
+            }
+        }
+    }
+
+    fun onMinuteChanged(minute: Int) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(minute = minute)
+            }
+        }
+    }
+
     fun onGameTypeSelect(gameType: GameType) {
         viewModelScope.launch {
             _uiState.update {
