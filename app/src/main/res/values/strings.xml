@@ -10,6 +10,7 @@
     <string name="breakTime_format">%1$d분</string>
     <string name="targetScore_format">%1$d점</string>
 
+    <string name="msg_back_pressed">앱을 종료하시려면 뒤로 버튼을 한 번 더 눌러주세요.</string>
     <string name="msg_play_game">경기 시작하기</string>
     <string name="msg_add_game">경기 추가하기</string>
     <string name="msg_add_player">선수 등록하기</string>

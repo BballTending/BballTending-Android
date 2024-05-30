@@ -1,5 +1,7 @@
 package com.bballtending.android.feature.home
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,8 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +45,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -72,25 +78,30 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
+import kotlinx.coroutines.launch
 
 const val HOME_SCREEN_ROUTE: String = "home"
 
 fun NavGraphBuilder.homeScreen(
+    onFinish: () -> Unit,
     onGameTypeSelect: (GameType, GameDate) -> Unit
 ) {
     composable(
         route = HOME_SCREEN_ROUTE
     ) {
-        HomeScreen(onGameTypeSelect)
+        HomeScreen(onFinish, onGameTypeSelect)
     }
 }
 
 @Composable
 private fun HomeScreen(
+    onFinish: () -> Unit,
     onGameTypeSelect: (GameType, GameDate) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState: HomeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
+    BackPressed(onFinish = onFinish)
 
     HomeScreen(
         selectedDate = uiState.selectedDate,
@@ -131,6 +142,7 @@ private fun HomeScreen(
         screenHeightDp
     }
     var peekInitY by remember { mutableStateOf(0) }
+    val scope = rememberCoroutineScope()
 
     BballTendingTheme {
         Box(
@@ -146,7 +158,12 @@ private fun HomeScreen(
                             gameData = selectedDateGameList,
                             homeTeamPlayerSortType = homeTeamPlayerSortType,
                             awayTeamPlayerSortType = awayTeamPlayerSortType,
-                            onSortTypeChange = onSortTypeChange
+                            onSortTypeChange = onSortTypeChange,
+                            onBack = {
+                                scope.launch {
+                                    scaffoldState.bottomSheetState.partialExpand()
+                                }
+                            }
                         )
                     } else {
                         HomeScreenPartiallyExpandedSheetContent(
@@ -372,9 +389,10 @@ private fun HomeScreenExpandedSheetContent(
     gameData: ImmutableList<GameData>,
     homeTeamPlayerSortType: SortType,
     awayTeamPlayerSortType: SortType,
-    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit
+    onSortTypeChange: (sortType: SortType, isHomeTeam: Boolean) -> Unit,
+    onBack: () -> Unit
 ) {
-    var curGameIdx by remember { mutableIntStateOf(0) }
+    BackHandler(onBack = onBack)
 
     // 게임 기록이 없는 경우
     if (gameData.isEmpty()) {
@@ -399,7 +417,14 @@ private fun HomeScreenExpandedSheetContent(
     }
     // 게임 기록이 있는 경우
     else {
+        var curGameIdx by remember { mutableIntStateOf(0) }
+        var curGameData by remember { mutableStateOf(gameData[curGameIdx]) }
         val scrollState = rememberScrollState()
+
+        LaunchedEffect(key1 = curGameIdx) {
+            curGameData = gameData[curGameIdx]
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -425,7 +450,7 @@ private fun HomeScreenExpandedSheetContent(
                         year = selectedDate.year,
                         month = selectedDate.month,
                         day = selectedDate.day,
-                        gameData = gameData[curGameIdx],
+                        gameData = curGameData,
                         isOnPrimary = true,
                         isDetail = true
                     )
@@ -442,9 +467,11 @@ private fun HomeScreenExpandedSheetContent(
                     Icon(
                         painter = painterResource(id = R.drawable.icon_left_arrow_active),
                         contentDescription = "왼쪽 화살표",
-                        modifier = Modifier.noRippleClickable {
-                            curGameIdx -= 1
-                        },
+                        modifier = Modifier
+                            .noRippleClickable {
+                                curGameIdx -= 1
+                            }
+                            .align(Alignment.CenterStart),
                         tint = Color.White
                     )
                 }
@@ -452,15 +479,17 @@ private fun HomeScreenExpandedSheetContent(
                     Icon(
                         painter = painterResource(id = R.drawable.icon_right_arrow_active),
                         contentDescription = "왼쪽 화살표",
-                        modifier = Modifier.noRippleClickable {
-                            curGameIdx + 1
-                        },
+                        modifier = Modifier
+                            .noRippleClickable {
+                                curGameIdx += 1
+                            }
+                            .align(Alignment.CenterEnd),
                         tint = Color.White
                     )
                 }
             }
             GameScoreTable(
-                gameData.first(),
+                curGameData,
                 homeTeamPlayerSortType = homeTeamPlayerSortType,
                 awayTeamPlayerSortType = awayTeamPlayerSortType,
                 onSortTypeChange = onSortTypeChange
@@ -563,11 +592,38 @@ private fun NoGameInfo(
     }
 }
 
+@Composable
+private fun BackPressed(onFinish: () -> Unit) {
+    val context = LocalContext.current
+    var lastBackPressedTime by remember { mutableLongStateOf(0) }
+
+    BackHandler {
+        val pressedTime = System.currentTimeMillis()
+        if (pressedTime - lastBackPressedTime <= 1000L) {
+            onFinish()
+        } else {
+            Toast.makeText(
+                context,
+                ContextCompat.getString(context, R.string.msg_back_pressed),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        lastBackPressedTime = pressedTime
+    }
+}
+
 @DevicePreview
 @Composable
 private fun HomeScreenPreview() {
     BballTendingTheme {
         HomeScreen(
+            selectedDate = GameDate(2024, 5, 30),
+            selectedDateGameList = listOf<GameData>().toImmutableList(),
+            gameExistDate = setOf<GameDate>().toImmutableSet(),
+            homeTeamPlayerSortType = SortType.DEFAULT,
+            awayTeamPlayerSortType = SortType.DEFAULT,
+            onDateChange = {},
+            onSortTypeChange = { _, _ -> },
             onGameTypeSelect = { _, _ -> }
         )
     }

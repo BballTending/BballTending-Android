@@ -8,10 +8,15 @@ import com.bballtending.android.feature.addgame.ADD_GAME_SCREEN_ROUTE
 import com.bballtending.android.feature.addgame.addGameScreen
 import com.bballtending.android.feature.home.HOME_SCREEN_ROUTE
 import com.bballtending.android.feature.home.homeScreen
+import com.bballtending.android.feature.scoreboard.SCOREBOARD_SCREEN_ROUTE
+import com.bballtending.android.feature.scoreboard.scoreboardScreen
 import com.bballtending.android.ui.theme.BballTendingTheme
 
 @Composable
 fun BballTendingApp(
+    onFinish: () -> Unit,
+    requestPortraitMode: () -> Unit,
+    requestLandscapeMode: () -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
     BballTendingTheme {
@@ -20,6 +25,7 @@ fun BballTendingApp(
             startDestination = HOME_SCREEN_ROUTE
         ) {
             homeScreen(
+                onFinish = onFinish,
                 onGameTypeSelect = { gameType, gameDate ->
                     navController.navigate("$ADD_GAME_SCREEN_ROUTE/${gameType.ordinal}/${gameDate.year}/${gameDate.month}/${gameDate.day}")
                 }
@@ -33,7 +39,18 @@ fun BballTendingApp(
                     )
                 },
                 onStartGame = {
-                    
+                    requestLandscapeMode()
+                    navController.navigate(SCOREBOARD_SCREEN_ROUTE)
+                }
+            )
+            scoreboardScreen(
+                onFinish = {
+                    requestPortraitMode()
+                    navController.popBackStack(
+                        route = HOME_SCREEN_ROUTE,
+                        inclusive = false,
+                        saveState = false
+                    )
                 }
             )
         }
