@@ -1,5 +1,9 @@
 package com.bballtending.android.domain.player.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class PlayerData(
     val playerId: Long,
     /**
@@ -66,7 +70,7 @@ data class PlayerData(
      * 파울
      */
     val foul: Int = 0
-) {
+) : Parcelable {
     val fieldGoalRatio: String
         get() = "$fieldGoalSuccess/$fieldGoalAttempt"
 
