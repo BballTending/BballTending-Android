@@ -76,5 +76,12 @@
     <string name="positionDesc_SF">공격과 수비 모두에서 다재다능한 역할</string>
     <string name="positionDesc_PF">피지컬 기반의 공격과 강한 리바운드 개입</string>
     <string name="positionDesc_C">팀의 방어력을 강화하는 핵심 역할</string>
+    
+    <string name="playGame_dialog_resumeTitle">경기 재개</string>
+    <string name="playGame_dialog_resumeMsg">잠시 중단된 경기를 계속해서 진행합니다.</string>
+    <string name="playGame_dialog_resumeBtn">이어서 진행하기</string>
+    <string name="playGame_dialog_finishTitle">경기 종료</string>
+    <string name="playGame_dialog_finishMsg">경기를 종료합니다.\n한 번 종료된 경기는 다시 시작할 수 없어요.</string>
+    <string name="playGame_dialog_finishBtn">경기 종료하기</string>
 
 </resources>
