@@ -7,7 +7,7 @@ import com.bballtending.android.data.repository.NetworkRepository
 import com.bballtending.android.data.repository.PlayerRepositoryImpl
 import com.bballtending.android.data.repository.ValidateGameDataRepositoryImpl
 import com.bballtending.android.domain.game.repository.GameRepository
-import com.bballtending.android.domain.game.repository.PlayerRepository
+import com.bballtending.android.domain.player.repository.PlayerRepository
 import com.bballtending.android.domain.game.repository.ValidateGameDataRepository
 import com.bballtending.android.domain.login.repository.LoginRepository
 import dagger.Module

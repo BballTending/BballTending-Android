@@ -7,7 +7,7 @@ import com.bballtending.android.domain.NetworkResult
 import com.bballtending.android.domain.game.model.GameData
 import com.bballtending.android.domain.game.model.GameDate
 import com.bballtending.android.domain.game.model.GameType
-import com.bballtending.android.domain.game.usecase.AddPlayerUseCase
+import com.bballtending.android.domain.player.usecase.AddPlayerUseCase
 import com.bballtending.android.domain.game.usecase.ChangeBreakTimeUseCase
 import com.bballtending.android.domain.game.usecase.ChangePlayTimeUseCase
 import com.bballtending.android.domain.game.usecase.ChangeQuarterUseCase

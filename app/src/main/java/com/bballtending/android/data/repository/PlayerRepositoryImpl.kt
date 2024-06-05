@@ -4,7 +4,7 @@ import com.bballtending.android.data.local.dao.GamePlayerRelationDao
 import com.bballtending.android.data.local.dao.PlayerDao
 import com.bballtending.android.data.local.database.AppDatabase
 import com.bballtending.android.data.local.entity.PlayerEntity
-import com.bballtending.android.domain.game.repository.PlayerRepository
+import com.bballtending.android.domain.player.repository.PlayerRepository
 import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.player.model.Position
 import kotlinx.coroutines.Dispatchers

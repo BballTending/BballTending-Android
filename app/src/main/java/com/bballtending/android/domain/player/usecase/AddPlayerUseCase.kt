@@ -1,7 +1,7 @@
-package com.bballtending.android.domain.game.usecase
+package com.bballtending.android.domain.player.usecase
 
 import com.bballtending.android.domain.NetworkResult
-import com.bballtending.android.domain.game.repository.PlayerRepository
+import com.bballtending.android.domain.player.repository.PlayerRepository
 import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.player.model.Position
 import kotlinx.coroutines.Dispatchers
