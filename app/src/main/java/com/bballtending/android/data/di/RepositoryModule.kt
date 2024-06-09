@@ -5,11 +5,13 @@ import com.bballtending.android.data.repository.GameRepositoryImpl
 import com.bballtending.android.data.repository.LoginRepositoryImpl
 import com.bballtending.android.data.repository.NetworkRepository
 import com.bballtending.android.data.repository.PlayerRepositoryImpl
+import com.bballtending.android.data.repository.TimerRepositoryImpl
 import com.bballtending.android.data.repository.ValidateGameDataRepositoryImpl
 import com.bballtending.android.domain.game.repository.GameRepository
-import com.bballtending.android.domain.player.repository.PlayerRepository
 import com.bballtending.android.domain.game.repository.ValidateGameDataRepository
 import com.bballtending.android.domain.login.repository.LoginRepository
+import com.bballtending.android.domain.player.repository.PlayerRepository
+import com.bballtending.android.domain.timer.repository.TimerRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +46,8 @@ object RepositoryModule {
         appDatabase: AppDatabase
     ): PlayerRepository =
         PlayerRepositoryImpl(appDatabase)
+
+    @Provides
+    @Singleton
+    fun provideTimerRepository(): TimerRepository = TimerRepositoryImpl()
 }

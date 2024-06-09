@@ -2,6 +2,7 @@ package com.bballtending.android.feature.playgame
 
 import com.bballtending.android.domain.game.model.GameData
 import com.bballtending.android.domain.player.model.PlayerData
+import com.bballtending.android.domain.timer.model.TimerState
 import com.bballtending.android.feature.base.UiEffect
 import com.bballtending.android.feature.base.UiEvent
 import com.bballtending.android.feature.base.UiState
@@ -14,6 +15,16 @@ class PlayGameContract {
          * UiState 초기화
          */
         data class OnInitGameData(val gameData: GameData) : Event()
+
+        /**
+         * 시스템 뒤로가기 버튼 클릭
+         */
+        object OnBackButtonClicked : Event()
+
+        /**
+         * 시스템 뒤로가기 버튼 다이얼로그 Dismiss
+         */
+        object OnBackButtonDialogDismiss : Event()
 
         /**
          * 게임 시작
@@ -43,7 +54,7 @@ class PlayGameContract {
         /**
          * 게임 종료
          */
-        object OnGameFinish : Event()
+        object OnGameCancel : Event()
 
         /**
          * 선수 카드 클릭 이벤트
@@ -93,14 +104,32 @@ class PlayGameContract {
 
     // Ui View States
     data class PlayGameUiState(
-        val playTimeUnitSec: Int = 0,
+        val curPlayTimeUnitMin: Int = 0,
+        val curPlayTimeUnitSec: Int = 0,
+        val curTimerState: TimerState = TimerState.Uninitialized,
         val curQuarter: Int = 1,
+        val maxQuarter: Int = 1,
         val homeTeamScore: Int = 0,
-        val awayTeamScore: Int = 0
+        val awayTeamScore: Int = 0,
+        val homeTeamPlayer: List<PlayerData> = listOf(),
+        val awayTeamPlayer: List<PlayerData> = listOf(),
+        val dialogState: DialogState = DialogState.NONE
     ) : UiState
 
     sealed class Effect : UiEffect {
         object ShowToast : Effect()
+    }
+
+    enum class DialogState {
+        /**
+         * 미출력
+         */
+        NONE,
+
+        /**
+         * 뒤로가기 버튼 클릭 시에 출력
+         */
+        BACK_BUTTON_DIALOG
     }
 
 }
