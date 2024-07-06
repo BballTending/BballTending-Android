@@ -48,7 +48,7 @@ fun BballTendingTimePicker(
             )
 
             Image(
-                painter = painterResource(id = R.drawable.icon_time_dividor),
+                painter = painterResource(id = R.drawable.icon_time_divider),
                 contentDescription = ":",
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
