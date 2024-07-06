@@ -89,6 +89,10 @@ class PlayGameViewModel @Inject constructor(
 
                 setState {
                     copy(
+                        year = gameData.year,
+                        month = gameData.month,
+                        day = gameData.day,
+                        gameType = gameData.gameType,
                         curPlayTimeUnitMin = gameData.playTime,
                         curPlayTimeUnitSec = 0,
                         curQuarter = 1,
@@ -140,8 +144,33 @@ class PlayGameViewModel @Inject constructor(
 
             PlayGameContract.Event.OnQuarterFinish -> TODO()
             PlayGameContract.Event.OnNextQuarter -> TODO()
-            is PlayGameContract.Event.OnPlayerCardClicked -> TODO()
-            is PlayGameContract.Event.OnTwoPointCardClicked -> TODO()
+            is PlayGameContract.Event.OnPlayerCardClicked -> {
+                val playerData = event.playerData
+                val isHomeTeamPlayer = event.isHomeTeamPlayer
+
+                if (isHomeTeamPlayer) {
+                    setState {
+                        copy(
+                            selectedPlayerState = PlayGameContract.SelectedPlayerState.HomeTeamPlayerClicked(
+                                playerData
+                            )
+                        )
+                    }
+                } else {
+                    setState {
+                        copy(
+                            selectedPlayerState = PlayGameContract.SelectedPlayerState.AwayTeamPlayerClicked(
+                                playerData
+                            )
+                        )
+                    }
+                }
+            }
+
+            is PlayGameContract.Event.OnTwoPointCardClicked -> {
+
+            }
+
             is PlayGameContract.Event.OnThreePointCardClicked -> TODO()
             is PlayGameContract.Event.OnReboundCardClicked -> TODO()
             is PlayGameContract.Event.OnStealCardClicked -> TODO()

@@ -4,16 +4,24 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -29,16 +37,23 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.bballtending.android.R
+import com.bballtending.android.TestModule
 import com.bballtending.android.common.util.DLog
 import com.bballtending.android.domain.game.model.GameData
 import com.bballtending.android.domain.game.model.GameDataParamType
+import com.bballtending.android.domain.game.model.GameType
+import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.timer.model.TimerState
+import com.bballtending.android.feature.playgame.component.PlayGameScoreBoard
 import com.bballtending.android.feature.playgame.dialog.PlayGameBackButtonDialog
 import com.bballtending.android.ui.noRippleClickable
-import com.bballtending.android.ui.preview.DevicePreviewLandscape
+import com.bballtending.android.ui.preview.DevicePreview
 import com.bballtending.android.ui.theme.BballTendingTheme
+import com.bballtending.android.ui.theme.BorderGray
 import com.bballtending.android.ui.theme.TextBlack
 import com.bballtending.android.ui.theme.TextHintGray
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 const val PLAY_GAME_SCREEN_ROUTE: String = "play_game"
 const val PLAY_GAME_DATA_ARGS: String = "game_data"
@@ -90,11 +105,21 @@ private fun PlayGameScreen(
         backButtonEnable = false
     }
     PlayGameScreen(
+        year = uiState.year,
+        month = uiState.month,
+        day = uiState.day,
+        gameType = uiState.gameType,
         curPlayTimeUnitMin = uiState.curPlayTimeUnitMin,
         curPlayTimeUnitSec = uiState.curPlayTimeUnitSec,
         curTimerState = uiState.curTimerState,
         curQuarter = uiState.curQuarter,
         maxQuarter = uiState.maxQuarter,
+        homeTeamScore = uiState.homeTeamScore,
+        awayTeamScore = uiState.awayTeamScore,
+        homeTeamPlayer = uiState.homeTeamPlayer.toImmutableList(),
+        awayTeamPlayer = uiState.awayTeamPlayer.toImmutableList(),
+        isHomeTeamLeft = uiState.isHomeTeamLeft,
+        selectedPlayerState = uiState.selectedPlayerState,
         onTimerClicked = {
             DLog.d(PLAY_GAME_SCREEN_ROUTE, "uiState.curTimerState=${uiState.curTimerState}")
             when (uiState.curTimerState) {
@@ -103,6 +128,14 @@ private fun PlayGameScreen(
                 TimerState.Pause -> viewModel.setEvent(PlayGameContract.Event.OnGameResume)
                 else -> {}
             }
+        },
+        onPlayerCardClicked = { playerData, isHomeTeamPlayer ->
+            viewModel.setEvent(
+                PlayGameContract.Event.OnPlayerCardClicked(
+                    playerData,
+                    isHomeTeamPlayer
+                )
+            )
         }
     )
 
@@ -125,32 +158,64 @@ private fun PlayGameScreen(
 
 @Composable
 private fun PlayGameScreen(
+    year: Int,
+    month: Int,
+    day: Int,
+    gameType: GameType,
     curPlayTimeUnitMin: Int,
     curPlayTimeUnitSec: Int,
     curTimerState: TimerState,
     curQuarter: Int,
     maxQuarter: Int,
-    onTimerClicked: () -> Unit
+    homeTeamScore: Int,
+    awayTeamScore: Int,
+    homeTeamPlayer: ImmutableList<PlayerData>,
+    awayTeamPlayer: ImmutableList<PlayerData>,
+    isHomeTeamLeft: Boolean,
+    selectedPlayerState: PlayGameContract.SelectedPlayerState,
+    onTimerClicked: () -> Unit,
+    onPlayerCardClicked: (PlayerData, Boolean) -> Unit
 ) {
+    val gameTypeText = when (gameType) {
+        GameType.FULL_COURT -> "(5X5)"
+        GameType.HALF_COURT -> "(3X3)"
+    }
+    val gameTitle = stringResource(id = R.string.game_title_format, year, month, day).let {
+        "$it $gameTypeText"
+    }
+
     BballTendingTheme {
-        ConstraintLayout(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BballTendingTheme.colors.background)
         ) {
-            val (timerComponent) = createRefs()
-
+            Text(
+                text = gameTitle,
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .align(Alignment.CenterHorizontally),
+                style = BballTendingTheme.typography.bold.copy(fontSize = 14.sp)
+            )
             TimerComponent(
                 curPlayTimeUnitMin = curPlayTimeUnitMin,
                 curPlayTimeUnitSec = curPlayTimeUnitSec,
                 curTimerState = curTimerState,
                 curQuarter = curQuarter,
                 maxQuarter = maxQuarter,
-                onTimerClicked = onTimerClicked,
-                modifier = Modifier.constrainAs(timerComponent) {
-                    centerHorizontallyTo(parent)
-                    top.linkTo(parent.top)
-                }
+                onTimerClicked = onTimerClicked
+            )
+            HorizontalDivider(
+                modifier = Modifier
+                    .width(100.dp)
+                    .align(Alignment.CenterHorizontally),
+                color = BorderGray
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            PlayGameScoreBoard(
+                isHomeTeamLeft = isHomeTeamLeft,
+                homeTeamScore = homeTeamScore,
+                awayTeamScore = awayTeamScore
             )
         }
     }
@@ -208,18 +273,19 @@ private fun TimerComponent(
         ConstraintLayout(
             modifier = modifier
                 .noRippleClickable(onTimerClicked)
-                .wrapContentSize()
+                .fillMaxWidth()
+                .wrapContentHeight()
         ) {
-            val (infoMsgRef, minTextRef, secTextRef, dividerRef) = createRefs()
+            val (infoMsgRef, minTextRef, secTextRef, dividerRef, quarterTextRef) = createRefs()
             Text(
                 text = timerInfoMsg,
                 modifier = Modifier
                     .constrainAs(infoMsgRef) {
                         centerHorizontallyTo(parent)
-                        top.linkTo(parent.top)
+                        top.linkTo(parent.top, margin = 20.dp)
                     },
                 style = BballTendingTheme.typography.regular.copy(
-                    fontSize = 14.sp,
+                    fontSize = 10.sp,
                     color = TextHintGray
                 )
             )
@@ -228,22 +294,22 @@ private fun TimerComponent(
                 modifier = Modifier
                     .constrainAs(minTextRef) {
                         centerVerticallyTo(dividerRef)
-                        end.linkTo(dividerRef.start, margin = 14.dp)
+                        end.linkTo(dividerRef.start, margin = 12.dp)
                     },
                 style = BballTendingTheme.typography.black.copy(
-                    fontSize = 60.sp,
+                    fontSize = 32.sp,
                     color = timeTextColor
                 )
             )
             Image(
-                painter = painterResource(id = R.drawable.icon_time_dividor),
+                painter = painterResource(id = R.drawable.icon_time_divider),
                 contentDescription = ":",
                 modifier = Modifier
-                    .widthIn(min = 12.dp)
-                    .heightIn(min = 32.dp)
+                    .widthIn(min = 6.dp)
+                    .heightIn(min = 18.dp)
                     .constrainAs(dividerRef) {
                         centerHorizontallyTo(parent)
-                        top.linkTo(infoMsgRef.bottom, margin = 25.dp)
+                        top.linkTo(infoMsgRef.bottom, margin = 15.dp)
                     },
                 contentScale = ContentScale.FillWidth,
                 colorFilter = ColorFilter.tint(color = timeTextColor)
@@ -253,28 +319,49 @@ private fun TimerComponent(
                 modifier = Modifier
                     .constrainAs(secTextRef) {
                         centerVerticallyTo(dividerRef)
-                        start.linkTo(dividerRef.end, margin = 14.dp)
+                        start.linkTo(dividerRef.end, margin = 12.dp)
                     },
                 style = BballTendingTheme.typography.black.copy(
-                    fontSize = 60.sp,
+                    fontSize = 32.sp,
                     color = timeTextColor
                 )
+            )
+            Text(
+                text = "${curQuarter}Q",
+                modifier = Modifier
+                    .constrainAs(quarterTextRef) {
+                        centerHorizontallyTo(parent)
+                        top.linkTo(dividerRef.bottom, margin = 12.dp)
+                        bottom.linkTo(parent.bottom, margin = 15.dp)
+                    },
+                style = BballTendingTheme.typography.medium.copy(fontSize = 12.sp)
             )
         }
     }
 }
 
-@DevicePreviewLandscape
+@DevicePreview
 @Composable
 fun PlayGameScreenPreview() {
     BballTendingTheme {
         PlayGameScreen(
+            year = 2024,
+            month = 7,
+            day = 6,
+            gameType = GameType.FULL_COURT,
             curPlayTimeUnitMin = 8,
             curPlayTimeUnitSec = 12,
             curTimerState = TimerState.Running(8, 12),
             curQuarter = 1,
             maxQuarter = 4,
-            onTimerClicked = {}
+            homeTeamScore = 33,
+            awayTeamScore = 22,
+            homeTeamPlayer = TestModule.createTestData().homeTeamPlayer.toImmutableList(),
+            awayTeamPlayer = TestModule.createTestData().awayTeamPlayer.toImmutableList(),
+            isHomeTeamLeft = true,
+            selectedPlayerState = PlayGameContract.SelectedPlayerState.None,
+            onTimerClicked = {},
+            onPlayerCardClicked = { _, _ -> }
         )
     }
 }

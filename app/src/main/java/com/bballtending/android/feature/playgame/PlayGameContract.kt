@@ -1,6 +1,7 @@
 package com.bballtending.android.feature.playgame
 
 import com.bballtending.android.domain.game.model.GameData
+import com.bballtending.android.domain.game.model.GameType
 import com.bballtending.android.domain.player.model.PlayerData
 import com.bballtending.android.domain.timer.model.TimerState
 import com.bballtending.android.feature.base.UiEffect
@@ -59,7 +60,10 @@ class PlayGameContract {
         /**
          * 선수 카드 클릭 이벤트
          */
-        data class OnPlayerCardClicked(val playerData: PlayerData) : Event()
+        data class OnPlayerCardClicked(
+            val playerData: PlayerData,
+            val isHomeTeamPlayer: Boolean
+        ) : Event()
 
         /**
          * 2점 슛 성공
@@ -104,6 +108,10 @@ class PlayGameContract {
 
     // Ui View States
     data class PlayGameUiState(
+        val year: Int = 2024,
+        val month: Int = 7,
+        val day: Int = 6,
+        val gameType: GameType = GameType.FULL_COURT,
         val curPlayTimeUnitMin: Int = 0,
         val curPlayTimeUnitSec: Int = 0,
         val curTimerState: TimerState = TimerState.Uninitialized,
@@ -113,6 +121,8 @@ class PlayGameContract {
         val awayTeamScore: Int = 0,
         val homeTeamPlayer: List<PlayerData> = listOf(),
         val awayTeamPlayer: List<PlayerData> = listOf(),
+        val isHomeTeamLeft: Boolean = true,
+        val selectedPlayerState: SelectedPlayerState = SelectedPlayerState.None,
         val dialogState: DialogState = DialogState.NONE
     ) : UiState
 
@@ -130,6 +140,27 @@ class PlayGameContract {
          * 뒤로가기 버튼 클릭 시에 출력
          */
         BACK_BUTTON_DIALOG
+    }
+
+    sealed class SelectedPlayerState {
+        object None : SelectedPlayerState()
+
+        data class HomeTeamPlayerClicked(val playerData: PlayerData) : SelectedPlayerState()
+
+        data class AwayTeamPlayerClicked(val playerData: PlayerData) : SelectedPlayerState()
+    }
+
+    enum class PlayerAction {
+        TWO_POINT_SUCCESS,
+        TWO_POINT_FAIL,
+        THREE_POINT_SUCCESS,
+        THREE_POINT_FAIL,
+        REBOUND,
+        STEAL,
+        ASSIST,
+        BLOCK,
+        FOUL,
+        TURNOVER
     }
 
 }

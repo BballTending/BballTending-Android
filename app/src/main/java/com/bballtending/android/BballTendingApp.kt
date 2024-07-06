@@ -48,14 +48,14 @@ fun BballTendingApp(
                     )
                 },
                 onStartGame = { gameData ->
-                    requestLandscapeMode()
+//                    requestLandscapeMode()
                     val gameDataJson = Uri.encode(Gson().toJson(gameData))
                     navController.navigate("$PLAY_GAME_SCREEN_ROUTE/$gameDataJson")
                 }
             )
             playGameScreen(
                 onFinish = {
-                    requestPortraitMode()
+//                    requestPortraitMode()
                     navController.popBackStack(
                         route = HOME_SCREEN_ROUTE,
                         inclusive = false,
