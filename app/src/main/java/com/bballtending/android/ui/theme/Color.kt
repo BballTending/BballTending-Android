@@ -21,3 +21,6 @@ val WinScoreRed = Color(0xFFBF3131)
 
 val BackCalendarActiveBlue = Color(0xFFD5D4DF)
 val BackCalendarHoverBlue = Color(0xFF3468C0)
+
+val BackActionTicketHome = Color(0xFFFF8E57)
+val BackActionTicketAway = Color(0xFF7E7E7E)

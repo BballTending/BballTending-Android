@@ -90,4 +90,15 @@
     <string name="playGame_timerInfo_endQuarter">%1$dQ가 종료되었습니다.</string>
     <string name="playGame_timerInfo_endGame">경기가 종료되었습니다.</string>
 
+    <string name="playerAction_twoPointSuccess">+2점</string>
+    <string name="playerAction_twoPointFail">2점 슛 시도</string>
+    <string name="playerAction_threePointSuccess">+3점</string>
+    <string name="playerAction_threePointFail">3점 슛 시도</string>
+    <string name="playerAction_reboud">리바운드</string>
+    <string name="playerAction_steal">스틸</string>
+    <string name="playerAction_assist">어시스트</string>
+    <string name="playerAction_block">블록</string>
+    <string name="playerAction_foul">파울</string>
+    <string name="playerAction_turnover">턴오버</string>
+
 </resources>

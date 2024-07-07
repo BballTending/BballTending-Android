@@ -150,17 +150,4 @@ class PlayGameContract {
         data class AwayTeamPlayerClicked(val playerData: PlayerData) : SelectedPlayerState()
     }
 
-    enum class PlayerAction {
-        TWO_POINT_SUCCESS,
-        TWO_POINT_FAIL,
-        THREE_POINT_SUCCESS,
-        THREE_POINT_FAIL,
-        REBOUND,
-        STEAL,
-        ASSIST,
-        BLOCK,
-        FOUL,
-        TURNOVER
-    }
-
 }

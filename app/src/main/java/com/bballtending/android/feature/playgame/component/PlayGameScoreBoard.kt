@@ -31,7 +31,8 @@ fun PlayGameScoreBoard(
     awayTeamName: String = "Away",
     homeTeamScore: Int = 52,
     awayTeamScore: Int = 33,
-    gameTime: String = ""
+    gameTime: String = "",
+    modifier: Modifier = Modifier
 ) {
     val homeTeamScoreColor = when {
         homeTeamScore > awayTeamScore -> WinScoreRed
@@ -43,7 +44,7 @@ fun PlayGameScoreBoard(
     }
     val teamNameColor = TextBlack
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
